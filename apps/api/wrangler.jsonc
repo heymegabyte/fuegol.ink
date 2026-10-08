@@ -16,6 +16,8 @@
 
   "browser": { "binding": "BROWSER" },
 
+  "r2_buckets": [{ "binding": "ARTIFACTS", "bucket_name": "fuegol-artifacts" }],
+
   "d1_databases": [
     {
       "binding": "DB",

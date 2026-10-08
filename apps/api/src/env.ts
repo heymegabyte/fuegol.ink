@@ -25,6 +25,9 @@ export interface Env {
   EXTRACT?: DurableObjectNamespace<ExtractCoordinator>;
   /** D1 — API keys + usage/credit ledger. */
   DB?: D1Database;
+  /** R2 — screenshots + result artifacts; served via /assets/*. */
+  ARTIFACTS?: R2Bucket;
+  ASSET_BASE?: string;
 }
 
 /** Project the Worker Env onto the engine's expected binding surface. */
@@ -38,5 +41,7 @@ export function engineEnv(env: Env): EngineEnv {
     SEARCH_PROVIDER: env.SEARCH_PROVIDER,
     EXA_API_KEY: env.EXA_API_KEY,
     TAVILY_API_KEY: env.TAVILY_API_KEY,
+    ARTIFACTS: env.ARTIFACTS,
+    ASSET_BASE: env.ASSET_BASE ?? env.SERVICE_ORIGIN,
   };
 }

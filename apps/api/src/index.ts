@@ -110,6 +110,20 @@ app.get('/', (c) =>
 
 app.get('/health', (c) => c.json({ status: 'ok', service: 'fuegol-api', version: '0.1.0' }));
 
+// Serve R2 artifacts (screenshots, result bundles) — public, cacheable, read-only.
+app.get('/assets/*', async (c) => {
+  if (!c.env.ARTIFACTS) return c.json({ success: false, error: 'Artifacts not configured', code: 'UNKNOWN_ERROR' }, 404);
+  const key = decodeURIComponent(new URL(c.req.url).pathname.replace(/^\/assets\//, ''));
+  if (!key || key.includes('..')) return c.json({ success: false, error: 'Bad asset key', code: 'BAD_REQUEST' }, 400);
+  const obj = await c.env.ARTIFACTS.get(key);
+  if (!obj) return c.json({ success: false, error: 'Asset not found', code: 'BAD_REQUEST' }, 404);
+  const headers = new Headers();
+  obj.writeHttpMetadata(headers);
+  if (!headers.has('content-type')) headers.set('content-type', 'image/png');
+  headers.set('cache-control', 'public, max-age=86400');
+  return new Response(obj.body, { headers });
+});
+
 const v2 = new Hono<{ Bindings: Env; Variables: Vars }>();
 v2.route('/', scrapeRoute);
 v2.route('/', mapRoute);

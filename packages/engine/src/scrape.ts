@@ -5,7 +5,7 @@ import { assertSafeUrl } from './ssrf';
 import { parseHtml, selectContent, extractLinks } from './extract-content';
 import { extractMetadata } from './metadata';
 import { htmlToMarkdown } from './html-to-markdown';
-import { browserAvailable, browserQuickAction } from './browser';
+import { browserAvailable, browserQuickAction, browserScreenshot } from './browser';
 import { extractWithAI, extractAvailable } from './extract-ai';
 import { planScrape, formatTypes } from './planner';
 import type { EngineEnv } from './types';
@@ -150,7 +150,18 @@ async function browserScrape(
     if (Array.isArray(r.result)) doc.links = r.result;
   }
   if (formats.has('screenshot')) {
-    doc.warning = 'screenshot capture returns binary; R2 asset-URL wiring is a planned increment.';
+    if (env.ARTIFACTS) {
+      const bytes = await browserScreenshot(env, url);
+      if (bytes) {
+        const key = `screenshots/${crypto.randomUUID()}.png`;
+        await env.ARTIFACTS.put(key, bytes, { httpMetadata: { contentType: 'image/png' } });
+        doc.screenshot = `${env.ASSET_BASE ?? ''}/assets/${key}`;
+      } else {
+        doc.warning = 'screenshot capture failed.';
+      }
+    } else {
+      doc.warning = 'screenshot format needs the R2 (ARTIFACTS) binding.';
+    }
   }
   return { document: doc, strategy: 'browser' };
 }
