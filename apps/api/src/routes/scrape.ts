@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { ScrapeRequestSchema } from '@fuegol/contracts';
 import { scrape, SsrfError } from '@fuegol/engine';
 import { engineEnv, type Env } from '../env';
+import { trackChange } from '../lib/change';
 import { fail, parseBody } from '../lib/respond';
 import { requireAuth, type Vars } from '../lib/auth';
 import { allowDemo } from '../lib/ratelimit';
@@ -25,6 +26,25 @@ route.post('/scrape', async (c) => {
   try {
     const { document, strategy } = await scrape(parsed.data, engineEnv(c.env));
     c.header('x-fuegol-strategy', strategy);
+
+    // changeTracking format: compare against last-seen content for this (scope, url, tag).
+    const fmts = parsed.data.formats ?? [];
+    const ct = fmts.find(
+      (f) => f === 'changeTracking' || (typeof f === 'object' && f.type === 'changeTracking'),
+    );
+    if (ct && c.env.DB && typeof document.markdown === 'string') {
+      const cfg = (typeof ct === 'object' ? ct : {}) as { tag?: string | null; modes?: string[] };
+      const scope = c.get('principal').keyId ?? 'anon';
+      document.changeTracking = await trackChange(
+        c.env.DB,
+        scope,
+        document.url ?? parsed.data.url,
+        cfg.tag || 'default',
+        document.markdown,
+        Array.isArray(cfg.modes) && cfg.modes.includes('git-diff'),
+      );
+    }
+
     return c.json({ success: true as const, data: document });
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
