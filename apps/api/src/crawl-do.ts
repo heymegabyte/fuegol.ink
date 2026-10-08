@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import type { Document, CrawlRequest } from '@fuegol/contracts';
+import type { Document, CrawlRequest, BatchScrapeRequest } from '@fuegol/contracts';
 import { scrape, mapSite, assertSafeUrl, fetchRobots, isAllowed } from '@fuegol/engine';
 import { engineEnv, type Env } from './env';
 
@@ -173,6 +173,56 @@ export class CrawlCoordinator extends DurableObject<Env> {
     await this.ctx.storage.put('robotsTxt', robotsTxt);
     await this.ctx.storage.setAlarm(Date.now() + 10);
     return { ok: true };
+  }
+
+  /** Initialize a batch-scrape job: a crawl over a fixed frontier with no link discovery. */
+  async startBatch(body: BatchScrapeRequest): Promise<{ invalidURLs: string[] }> {
+    const urls = body.urls ?? [];
+    const valid: string[] = [];
+    const invalidURLs: string[] = [];
+    for (const u of urls) {
+      try {
+        assertSafeUrl(u);
+        valid.push(u);
+      } catch {
+        invalidURLs.push(u);
+      }
+    }
+    const frontier: FrontierItem[] = valid.slice(0, MAX_PAGES_CAP).map((u) => ({ url: u, depth: 0 }));
+    const options = {
+      ...body,
+      maxDiscoveryDepth: 0,
+      scrapeOptions: {
+        formats: body.formats,
+        onlyMainContent: body.onlyMainContent,
+        includeTags: body.includeTags,
+        excludeTags: body.excludeTags,
+      },
+    } as unknown as CrawlRequest;
+    const meta: CrawlMeta = {
+      status: valid.length === 0 ? 'failed' : 'scraping',
+      url: valid[0] ?? '',
+      options,
+      total: frontier.length,
+      completed: 0,
+      creditsUsed: 0,
+      createdAt: new Date().toISOString(),
+      limit: Math.min(Math.max(valid.length, 1), MAX_PAGES_CAP),
+      maxDepth: 0,
+    };
+    if (valid.length === 0) meta.completedAt = new Date().toISOString();
+
+    await this.ctx.storage.put('meta', meta);
+    await this.ctx.storage.put('frontier', frontier);
+    await this.ctx.storage.put(
+      'seen',
+      frontier.map((f) => f.url),
+    );
+    await this.ctx.storage.put('errors', [] as CrawlError[]);
+    await this.ctx.storage.put('robotsBlocked', [] as string[]);
+    await this.ctx.storage.put('robotsTxt', null);
+    if (valid.length > 0) await this.ctx.storage.setAlarm(Date.now() + 10);
+    return { invalidURLs };
   }
 
   override async alarm(): Promise<void> {

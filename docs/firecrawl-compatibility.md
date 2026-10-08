@@ -31,7 +31,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | GET | `/crawl/:jobId/errors` | Crawl errors + robotsBlocked | ✅ live |
 | GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | 🟡 empty (no cross-DO registry yet) |
 | POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
-| POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape | ⛔ |
+| POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
 | POST | `/search` | Web/news/image + category search | 🟡 contract; provider adapter ⛔ |
 | POST | `/extract` · GET `/extract/:jobId` | Async structured extraction | ⛔ (Workers AI + AI Gateway) |
 | POST | `/parse` (+ formats/upload) | Document parse (PDF/DOCX/…) | ⛔ |

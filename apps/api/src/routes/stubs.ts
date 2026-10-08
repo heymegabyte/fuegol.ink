@@ -26,10 +26,6 @@ function notYet(feature: string, hint: string) {
 
 const ROADMAP = 'See docs/implementation-roadmap.md.';
 
-// Batch scrape (Queues fan-out — reuses the crawl DO pattern)
-route.post('/batch/scrape', notYet('Batch scrape', `Queues fan-out increment. ${ROADMAP}`));
-route.get('/batch/scrape/:id', notYet('Batch scrape status', ROADMAP));
-
 // Search (needs a pluggable web-search provider key)
 route.post('/search', notYet('Web search', 'Configure a search provider (SEARCH_PROVIDER + API key) to enable. ' + ROADMAP));
 

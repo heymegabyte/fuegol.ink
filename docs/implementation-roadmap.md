@@ -21,7 +21,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ `CrawlCoordinator` Durable Object: alarm-driven BFS frontier, robots-aware, include/exclude-path regex, per-origin delay, depth cap, cancellation (I/O-race-safe), page storage
 - ✅ `POST /v2/crawl` + `GET /v2/crawl/:id` (paginated) + `DELETE /v2/crawl/:id` + `GET /v2/crawl/:id/errors` + `/crawl/active` — **live, 11/11 E2E green**
 - ✅ MCP `firecrawl_crawl` + `firecrawl_check_crawl_status` wired via service binding to the crawl API
-- v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: `POST /v2/batch/scrape`, signed webhooks + retries, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
+- ✅ `POST /v2/batch/scrape` (+ status/cancel/errors) — reuses the crawl DO with a fixed frontier + no discovery; invalid-URL filtering + `ignoreInvalidURLs`; **9/9 E2E green**
+- v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: signed webhooks + retries, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
 
 ## ⛔ Increment 3 — Search, research, monitoring
 - Pluggable web-search provider adapter (Brave/Serper/Exa) behind `SEARCH_PROVIDER`

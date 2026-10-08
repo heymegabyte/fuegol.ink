@@ -3,7 +3,9 @@ import { ScrapeOptionsSchema } from './scrape';
 import { WebhookConfigSchema } from './webhook';
 
 export const BatchScrapeRequestSchema = ScrapeOptionsSchema.extend({
-  urls: z.array(z.string().url()).min(1),
+  // Lenient: invalid entries are filtered + reported as `invalidURLs` (honours ignoreInvalidURLs),
+  // matching Firecrawl. URL validity is enforced per-item in the batch handler + SSRF guard.
+  urls: z.array(z.string()).min(1),
   webhook: WebhookConfigSchema.optional(),
   appendToId: z.string().optional(),
   ignoreInvalidURLs: z.boolean().default(true),
