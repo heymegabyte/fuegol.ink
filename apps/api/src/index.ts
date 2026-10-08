@@ -11,10 +11,12 @@ import extractRoute from './routes/extract';
 import searchRoute from './routes/search';
 import parseRoute from './routes/parse';
 import keysRoute from './routes/keys';
+import monitorRoute from './routes/monitor';
 import accountRoute from './routes/account';
 import stubsRoute from './routes/stubs';
 import v1Route from './routes/v1';
 import { recordUsage, creditsUsedThisPeriod, effectiveCap } from './lib/ledger';
+import { runDueMonitors } from './lib/monitor';
 
 export { CrawlCoordinator } from './crawl-do';
 export { ExtractCoordinator } from './extract-do';
@@ -156,6 +158,7 @@ v2.route('/', extractRoute);
 v2.route('/', searchRoute);
 v2.route('/', parseRoute);
 v2.route('/', keysRoute);
+v2.route('/', monitorRoute);
 v2.route('/', accountRoute);
 v2.route('/', stubsRoute);
 app.route('/v2', v2);
@@ -180,4 +183,12 @@ app.onError((err, c) => {
   );
 });
 
-export default app;
+// Cron sweep: run due monitors (recurring scrape + change detection).
+const scheduled = async (_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> => {
+  ctx.waitUntil(runDueMonitors(env));
+};
+
+export default {
+  fetch: (req: Request, env: Env, ctx: ExecutionContext) => app.fetch(req, env, ctx),
+  scheduled,
+};

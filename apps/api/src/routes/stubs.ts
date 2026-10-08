@@ -29,9 +29,6 @@ const ROADMAP = 'See docs/implementation-roadmap.md.';
 // Autonomous research agents (FIRE-1 equivalent)
 route.post('/agent', notYet('Autonomous research agent', ROADMAP));
 route.get('/agent/:id', notYet('Agent status', ROADMAP));
-// Change tracking + monitors
-route.post('/monitor', notYet('Change monitor', ROADMAP));
-route.get('/monitor', notYet('Monitor list', ROADMAP));
 // Interactive browser sessions (interact)
 route.post('/browser', notYet('Interactive browser session', ROADMAP));
 
