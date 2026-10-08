@@ -37,8 +37,9 @@ export function extractMetadata(root: HTMLElement, info: MetadataInput): Documen
     return undefined;
   };
 
-  const title = get(['og:title', 'twitter:title']) ?? decode(root.querySelector('title')?.text ?? '') || undefined;
+  const title = get(['og:title', 'twitter:title']) ?? (decode(root.querySelector('title')?.text ?? '') || undefined);
   const lang = root.querySelector('html')?.getAttribute('lang') ?? undefined;
+
   const faviconHref =
     root.querySelector('link[rel="icon"]')?.getAttribute('href') ??
     root.querySelector('link[rel="shortcut icon"]')?.getAttribute('href') ??
@@ -52,30 +53,31 @@ export function extractMetadata(root: HTMLElement, info: MetadataInput): Documen
     }
   }
 
-  const md: DocumentMetadata = {
+  const md: Record<string, string | number | string[] | null> = {
     statusCode: info.statusCode,
     sourceURL: info.url,
     url: info.url,
-    title,
-    description: get(['description', 'og:description', 'twitter:description']),
-    language: lang ?? get(['og:locale']),
-    keywords: get(['keywords']),
-    robots: get(['robots']),
-    ogTitle: get(['og:title']),
-    ogDescription: get(['og:description']),
-    ogUrl: get(['og:url']),
-    ogImage: get(['og:image']),
-    ogSiteName: get(['og:site_name']),
-    ogLocale: get(['og:locale']),
-    favicon,
-    publishedTime: get(['article:published_time']),
-    modifiedTime: get(['article:modified_time']),
-    articleSection: get(['article:section']),
-    ...(info.contentType ? { contentType: info.contentType } : {}),
+  };
+  const put = (key: string, value: string | undefined): void => {
+    if (value) md[key] = value;
   };
 
-  for (const key of Object.keys(md) as (keyof DocumentMetadata)[]) {
-    if (md[key] === undefined) delete md[key];
-  }
-  return md;
+  put('title', title);
+  put('description', get(['description', 'og:description', 'twitter:description']));
+  put('language', lang ?? get(['og:locale']));
+  put('keywords', get(['keywords']));
+  put('robots', get(['robots']));
+  put('ogTitle', get(['og:title']));
+  put('ogDescription', get(['og:description']));
+  put('ogUrl', get(['og:url']));
+  put('ogImage', get(['og:image']));
+  put('ogSiteName', get(['og:site_name']));
+  put('ogLocale', get(['og:locale']));
+  put('favicon', favicon);
+  put('publishedTime', get(['article:published_time']));
+  put('modifiedTime', get(['article:modified_time']));
+  put('articleSection', get(['article:section']));
+  if (info.contentType) md.contentType = info.contentType;
+
+  return md as DocumentMetadata;
 }

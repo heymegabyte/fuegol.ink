@@ -202,9 +202,25 @@ function renderBlock(node: Node, ctx: MarkdownContext): string {
         .map((l) => (l ? `> ${l}` : '>'))
         .join('\n');
     case 'pre': {
-      const codeEl = el.querySelector('code') ?? el;
-      const lang = detectLanguage(codeEl) || detectLanguage(el);
-      const code = decodeEntities((codeEl as unknown as { rawText: string }).rawText).replace(/\n+$/, '');
+      // node-html-parser treats <pre> as a block-text element, so its inner <code>
+      // may be unparsed raw text. Handle both the parsed and raw-string forms.
+      const codeEl = el.querySelector('code');
+      let lang = '';
+      let raw = '';
+      if (codeEl) {
+        lang = detectLanguage(codeEl);
+        raw = (codeEl as unknown as { rawText: string }).rawText ?? '';
+      } else {
+        raw = (el as unknown as { rawText: string }).rawText ?? '';
+        const wrapped = raw.match(/^\s*<code([^>]*)>([\s\S]*?)<\/code>\s*$/i);
+        if (wrapped) {
+          const langMatch = (wrapped[1] ?? '').match(/(?:language|lang)-([a-z0-9+#]+)/i);
+          if (langMatch) lang = langMatch[1]!;
+          raw = wrapped[2] ?? '';
+        }
+      }
+      if (!lang) lang = detectLanguage(el);
+      const code = decodeEntities(raw).replace(/\n+$/, '');
       return `\`\`\`${lang}\n${code}\n\`\`\``;
     }
     case 'ul':
