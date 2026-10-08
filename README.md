@@ -20,6 +20,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/heymegabyte/fuegol.ink/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/heymegabyte/fuegol.ink/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="status" src="https://img.shields.io/badge/status-alpha-00E5FF?style=flat-square">
   <img alt="api" src="https://img.shields.io/badge/API-live-2ecc71?style=flat-square">
   <img alt="firecrawl" src="https://img.shields.io/badge/Firecrawl_v2-compatible-FF8A3D?style=flat-square">
