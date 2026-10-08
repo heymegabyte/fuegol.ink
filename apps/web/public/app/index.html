@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 <style>
-  :root{--bg:#060610;--ink:#eef2f7;--mut:#9aa3b5;--faint:#6b7488;--cyan:#00e5ff;--cyan2:#50aae3;--flame1:#ff5722;--flame2:#ff8a3d;--flame3:#ffc24b;--violet:#7c3aed;--line:rgba(255,255,255,.09);--glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.06);--mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Space Grotesk',system-ui,sans-serif;--sans:system-ui,-apple-system,'Segoe UI',sans-serif}
+  :root{--bg:#060610;--ink:#eef2f7;--mut:#9aa3b5;--faint:#7b8498;--cyan:#00e5ff;--cyan2:#50aae3;--flame1:#ff5722;--flame2:#ff8a3d;--flame3:#ffc24b;--violet:#7c3aed;--line:rgba(255,255,255,.09);--glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.06);--mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Space Grotesk',system-ui,sans-serif;--sans:system-ui,-apple-system,'Segoe UI',sans-serif}
   *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;background:radial-gradient(50vw 50vw at 90% -10%,rgba(255,87,34,.12),transparent 55%),radial-gradient(55vw 55vw at 5% 0,rgba(0,229,255,.12),transparent 60%)}
   .wrap{max-width:1000px;margin:0 auto;padding:0 22px;position:relative;z-index:1}
@@ -103,7 +103,7 @@
       <div class="tab" data-ep="crawl">crawl</div>
     </div>
     <div class="row">
-      <input class="grow" id="pgInput" value="https://example.com" />
+      <input class="grow" id="pgInput" aria-label="URL or search query to run" value="https://example.com" />
       <button class="btn btn-p" id="runBtn">Run →</button>
     </div>
     <div id="fmtRow" class="row" style="margin-top:10px">
@@ -121,7 +121,7 @@
     <h2>🖥️ Interactive browser session</h2>
     <div class="hint">Drive a real headless browser live — click, type, scroll; the screenshot updates after every step. Metered: 2 credits to start, 1 per action.</div>
     <div class="row">
-      <input class="grow" id="sessUrl" value="https://quotes.toscrape.com/" />
+      <input class="grow" id="sessUrl" aria-label="URL to open in the browser session" value="https://quotes.toscrape.com/" />
       <button class="btn btn-p" id="sessStart">Start session →</button>
     </div>
     <div id="sessPanel" style="display:none;margin-top:14px">
