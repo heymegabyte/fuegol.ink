@@ -32,7 +32,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ Pluggable web-search provider adapter (**Exa** primary, **Tavily** fallback) behind `SEARCH_PROVIDER`; keys are Worker secrets
 - ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
 - ✅ **Category search via Exa scoping**: `/v2/search` `categories` (developer/github → GitHub, research → research-paper, pdf, gov → gov-domain list) + MCP `firecrawl_developer_search` / `firecrawl_gov_search` / `firecrawl_research_search_papers` now real (verified: NeurIPS/ACM papers, ecfr/congress.gov, github). ⛔ remaining: news/images sources, paper inspect/related/read, find_tools
-- Tenant Cloudflare AI Search indexing; semantic change monitors on Cron
+- ✅ **Monitors** (D1 `monitors`/`monitor_checks` + changeTracking + Cron `*/15`): `POST /v2/monitor` + list/get/delete/`:id/run`/`:id/checks`; change detection verified (new→changed), migration 0004
+- ⛔ Tenant Cloudflare AI Search indexing; monitor webhook alerts; MCP monitor tools (need key forwarding)
 
 ## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)
 - ✅ Stateless Streamable-HTTP JSON-RPC server **live at https://fuegol-mcp.manhattan.workers.dev**
