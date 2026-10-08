@@ -1,0 +1,58 @@
+# Implementation Roadmap
+
+Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundation shipped 2026-10-07.
+
+## ✅ Pass 0 — Foundation (shipped + prod-verified)
+
+- ✅ Pinned-source research (Firecrawl API @f9f2e3d, MCP @ec0f9de / v3.28.2 = 30 tools/28 listed, pricing, CF primitives)
+- ✅ `@fuegol/contracts` — Zod SSOT for scrape/map/crawl/batch/search/extract/account/webhook + full `formats` + `ErrorCode` enum
+- ✅ `@fuegol/engine` — SSRF guard (v4/v6/metadata/redirect + optional DoH), safe-fetch, readability extraction, HTML→Markdown, sitemap + robots discovery, cheapest-tier planner, Browser-Rendering client (dormant until bound)
+- ✅ `@fuegol/api` — Hono Worker: `POST /v2/scrape`, `POST /v2/map`, account/concurrency, `/v1` adapters, honest 501 stubs, Firecrawl error envelopes. **Live: https://fuegol-api.manhattan.workers.dev**
+- ✅ 13 engine tests green (SSRF, HTML→MD, live scrape + map); 15/15 prod E2E assertions green
+- ✅ Docs: idea-ledger (360 ideas/108 selected), firecrawl-compatibility, product-surface-inventory, unit-economics, architecture-decisions, convergence-log, this roadmap
+
+## 🟡 Increment 1 — Scrape completeness + custom domains
+- 🟡 Browser tier: verify `env.BROWSER` binding on-account → enable JS render, `{type:"json"}` extraction, screenshots→R2 asset URLs
+- ⛔ Document parse (`/v2/parse`): PDF/DOCX → markdown (Browser Rendering + Workers AI OCR)
+- ⛔ `changeTracking` format (needs a stored prior-scrape index in R2/D1)
+- ⛔ Custom domains: `api.fuegol.ink`, route binding in wrangler (needs zone)
+
+## ⛔ Increment 2 — Async crawl + batch (Durable Objects + Queues)
+- CrawlCoordinator DO: frontier, per-origin politeness/crawl-delay, progress events, cancel, R2 result bundles
+- `POST /v2/crawl` + status/errors/active/cancel; `POST /v2/batch/scrape`; signed webhooks + retries
+- Visual site-link graph + live progress (dashboard)
+
+## ⛔ Increment 3 — Search, research, monitoring
+- Pluggable web-search provider adapter (Brave/Serper/Exa) behind `SEARCH_PROVIDER`
+- `/v2/search` with sources (web/news/images) + categories (github/research/pdf/developer/gov)
+- Developer + gov + scholarly research adapters (authorized indexes only)
+- Tenant Cloudflare AI Search indexing; semantic change monitors on Cron
+
+## ⛔ Increment 4 — Remote MCP (mcp.fuegol.ink)
+- Stateless `createMcpHandler`: `/v2/mcp` (full), `/v2/mcp-search` (9-tool profile), `/mcp` alias
+- OAuth discovery + bearer keys + scoped per-tool permissions; keyless 3-tool profile
+- MCP contract tests; tested with Claude Code + Codex
+
+## ⛔ Increment 5 — Billing (Stripe) + credit ledger
+- D1 key store + idempotent transactional credit ledger; reserve-before-work + reconcile
+- Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, hard spend ceilings
+- **Test mode until explicitly approved for live.**
+
+## ⛔ Increment 6 — Website + dashboard
+- `fuegol.ink` cinematic marketing (near-black / electric-cyan / amber-flame) + public demo playground
+- `app.fuegol.ink` Angular dashboard: keys, jobs, crawls, usage, invoices, MCP connections, orgs/teams
+- `docs.fuegol.ink` interactive docs + "Get code" (TS/Python/cURL)
+
+## ⛔ Increment 7 — One-click deploy + SDKs + growth
+- Dependency-isolated standalone Worker for the Deploy-to-Cloudflare button; verify from a clean account
+- TS + Python SDK compat shims; CLI; migration guide
+- 4 original generated README illustrations; benchmark corpus + published methodology
+
+## Benchmarks (ongoing, feeds unit-economics.md)
+- Corpus: static / JS-heavy / docs / e-commerce / blog / PDF / paginated / i18n / slow / error / auth fixtures
+- Metrics: extraction coverage, markdown quality, P50/P95 latency, real CF cost/op, gross margin, cancel correctness
+- Reproducible compatibility contract tests vs pinned upstream; regression test per fixed defect
+
+## Convergence
+Not converged — this is Pass 0. Declare convergence only when two consecutive full passes surface no
+material gaps and all release-blocking tests pass (see convergence-log.md).
