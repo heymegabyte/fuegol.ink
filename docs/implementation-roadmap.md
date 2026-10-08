@@ -96,6 +96,12 @@ monitor webhook alerts, AI Search/RAG). Full prod E2E suite is green end-to-end:
 **83/83 assertions across 9 harnesses, all against the live production API.** Re-run any via
 `node e2e/<name>/run.mjs`.
 
+**Observability (estate baseline) added 2026-10-08:** server-side `@sentry/cloudflare` v11 on
+`fuegol-api` (handler + scheduled + all 3 Durable Objects instrumented) and `fuegol-mcp` (handler).
+Sentry project `fuegol-ink` in org `megabyte-labs`; inbound crawler/legacy-browser filters disabled.
+**Verified end-to-end** — gated `/debug/sentry?token=selftest` self-test errors confirmed landing via
+the Sentry issues API; DO instrumentation non-breaking (sdk-compat 8/8 + browser-session 10/10 after).
+
 Remaining work is **not buildable-and-verifiable autonomously** — it is externally gated or
 deliberately deferred, so it does not block a convergence declaration:
 - **External input required:** Stripe billing (`sk_test_` key), custom domains + one-click Deploy

@@ -11,6 +11,7 @@
   "dependencies": {
     "@fuegol/contracts": "workspace:*",
     "@fuegol/engine": "workspace:*",
+    "@sentry/cloudflare": "^11.5.0",
     "hono": "^4.6.14",
     "node-html-parser": "^6.1.13",
     "zod": "^3.24.1"

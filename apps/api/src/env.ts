@@ -35,6 +35,8 @@ export interface Env {
   VECTORIZE?: VectorizeIndex;
   /** Secret used to HMAC-sign outbound crawl/batch webhooks. */
   WEBHOOK_SECRET?: string;
+  /** Sentry DSN (server-side `@sentry/cloudflare`) — estate observability baseline. */
+  SENTRY_DSN?: string;
 }
 
 /** Project the Worker Env onto the engine's expected binding surface. */

@@ -294,6 +294,8 @@ pnpm install && cd apps/api && pnpm exec wrangler deploy
 - **Signed webhooks** (HMAC-SHA256, `x-fuegol-signature`) fire on crawl/batch completion **and on
   monitor change detection** (`monitor.changed`), with retries. Webhook targets are SSRF-guarded.
 - Zero-data-retention mode, PII redaction, and per-tenant isolation are on the roadmap.
+- **Observability:** server-side **Sentry** (`@sentry/cloudflare`) on the API + MCP Workers —
+  errors + traces, with every Durable Object instrumented — plus Workers Tracing. No browser SDK.
 
 ## Repository layout
 

@@ -1,7 +1,10 @@
+import * as Sentry from '@sentry/cloudflare';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Env } from './env';
 import { listTools, TOOLS, toolError, type McpContent, type ToolProfile } from './tools';
+
+const sentryOptions = (env: Env) => ({ dsn: env.SENTRY_DSN, tracesSampleRate: 1.0 });
 
 /**
  * fuegol.ink remote MCP — stateless Streamable-HTTP (JSON-RPC 2.0 over POST).
@@ -101,6 +104,15 @@ const INFO = {
 app.get('/', (c) => c.json(INFO));
 app.get('/health', (c) => c.json({ status: 'ok', service: 'fuegol-mcp' }));
 
+app.onError((err, c) => {
+  Sentry.captureException(err);
+  return c.json(rpcError(null, -32603, 'Internal error'), 500);
+});
+app.get('/debug/sentry', (c) => {
+  if (c.req.query('token') !== 'selftest') return c.json({ ok: false }, 404);
+  throw new Error(`sentry-selftest-mcp ${c.req.query('nonce') ?? ''}`.trim());
+});
+
 const mount = (path: string, profile: ToolProfile) => {
   app.get(path, (c) => c.json({ ...INFO, profile, hint: 'POST JSON-RPC 2.0 here (initialize, tools/list, tools/call).' }));
   app.post(path, async (c) => {
@@ -120,4 +132,6 @@ mount('/v2/mcp', 'full');
 mount('/mcp', 'full');
 mount('/v2/mcp-search', 'search');
 
-export default app;
+export default Sentry.withSentry(sentryOptions, {
+  fetch: (req: Request, env: Env, ctx: ExecutionContext) => app.fetch(req, env, ctx),
+} satisfies ExportedHandler<Env>);

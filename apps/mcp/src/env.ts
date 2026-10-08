@@ -10,6 +10,8 @@ export interface Env {
   API?: Fetcher;
   /** Public base URL of the REST API — fallback for self-host when no service binding. */
   API_BASE?: string;
+  /** Sentry DSN (server-side `@sentry/cloudflare`) — estate observability baseline. */
+  SENTRY_DSN?: string;
 }
 
 export const DEFAULT_API_BASE = 'https://fuegol-api.manhattan.workers.dev';

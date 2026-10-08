@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/cloudflare';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { FIRECRAWL_COMPAT } from '@fuegol/contracts';
@@ -21,9 +22,21 @@ import v1Route from './routes/v1';
 import { recordUsage, creditsUsedThisPeriod, effectiveCap } from './lib/ledger';
 import { runDueMonitors } from './lib/monitor';
 
-export { CrawlCoordinator } from './crawl-do';
-export { ExtractCoordinator } from './extract-do';
-export { BrowserSession } from './browser-do';
+import { CrawlCoordinator as CrawlCoordinatorBase } from './crawl-do';
+import { ExtractCoordinator as ExtractCoordinatorBase } from './extract-do';
+import { BrowserSession as BrowserSessionBase } from './browser-do';
+
+/** Shared Sentry options (estate baseline — server-side `@sentry/cloudflare`). */
+const sentryOptions = (env: Env) => ({
+  dsn: env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+
+// Durable Objects run in their own isolates — each must be instrumented + re-exported under
+// the class_name wrangler expects, else errors inside them never reach Sentry.
+export const CrawlCoordinator = Sentry.instrumentDurableObjectWithSentry(sentryOptions, CrawlCoordinatorBase);
+export const ExtractCoordinator = Sentry.instrumentDurableObjectWithSentry(sentryOptions, ExtractCoordinatorBase);
+export const BrowserSession = Sentry.instrumentDurableObjectWithSentry(sentryOptions, BrowserSessionBase);
 
 /** Map a request to its billable operation + credit cost (null = not billed). */
 function usageForRequest(method: string, path: string): { name: string; credits: number } | null {
@@ -189,10 +202,17 @@ app.notFound((c) =>
 
 app.onError((err, c) => {
   console.error('Unhandled error:', err);
+  Sentry.captureException(err); // Hono catches route throws here, so capture explicitly.
   return c.json(
     { success: false, error: err instanceof Error ? err.message : 'Internal error', code: 'UNKNOWN_ERROR' },
     500,
   );
+});
+
+// Sentry self-test: throws (→ onError → captured). Gated by a token so it is not abusable.
+app.get('/debug/sentry', (c) => {
+  if (c.req.query('token') !== 'selftest') return c.json({ ok: false }, 404);
+  throw new Error(`sentry-selftest ${c.req.query('nonce') ?? ''}`.trim());
 });
 
 // Cron sweep: run due monitors (recurring scrape + change detection).
@@ -200,7 +220,7 @@ const scheduled = async (_event: ScheduledController, env: Env, ctx: ExecutionCo
   ctx.waitUntil(runDueMonitors(env));
 };
 
-export default {
+export default Sentry.withSentry(sentryOptions, {
   fetch: (req: Request, env: Env, ctx: ExecutionContext) => app.fetch(req, env, ctx),
   scheduled,
-};
+} satisfies ExportedHandler<Env>);
