@@ -1,0 +1,25 @@
+name: CI
+
+# Gate every push + PR with the hermetic checks (typecheck + unit tests). Prod E2E lives in
+# e2e/ and runs against the live Worker; it needs deploy creds so it is not in this gate.
+# The solo-builder doctrine auto-merges diffs that clear all gates — this is that gate.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (all packages)
+        run: pnpm -r --if-present typecheck
+      - name: Unit tests (engine)
+        run: pnpm --filter @fuegol/engine test
