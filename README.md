@@ -104,30 +104,36 @@ Edge primitives: **Workers + Hono · Browser Rendering · Queues · Workflows ·
 D1 · R2 · Workers AI · AI Gateway · AI Search**. No portability layer — the CF integration *is* the
 cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architecture-decisions.md).
 
-## What works today (alpha)
+## What works today
+
+Every row below is live on the production API and covered by a reproducible prod E2E in [`e2e/`](e2e/).
 
 | Capability | Status |
 |---|---|
-| `POST /v2/scrape` → markdown / html / rawHtml / links / summary / metadata | ✅ live (static tier) |
+| `POST /v2/scrape` → markdown / html / rawHtml / links / summary / metadata | ✅ live |
 | `POST /v2/scrape` → `{type:"json"}` AI extraction (Workers AI) | ✅ live |
-| `POST /v2/extract` async structured extraction (Workers AI) | ✅ live |
+| `POST /v2/scrape` → JS-rendered (Browser Rendering) + `screenshot` → R2 | ✅ live |
+| `POST /v2/scrape` → `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf) | ✅ live |
+| `POST /v2/scrape` → `changeTracking` (git-diff **+ AI `json` semantic diff**) | ✅ live |
+| `POST /v2/extract` async structured extraction (Workers AI, Durable Object) | ✅ live |
 | `POST /v2/map` → sitemap + link discovery | ✅ live |
-| API keys (`POST /v2/keys`) + D1 credit ledger, **enforced spend ceilings** (402 over-limit) + user spend limits (`/team/spend-limit`) | ✅ live |
-| `/concurrency-check` | ✅ live |
-| `/v1/scrape`, `/v1/map` legacy adapters | ✅ live |
-| SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, error envelopes | ✅ live |
-| `POST /v2/crawl` async job (Durable-Object coordinator) + status/cancel/errors | ✅ live |
-| Remote MCP — `firecrawl_scrape`, `firecrawl_map`, `firecrawl_crawl`, `firecrawl_check_crawl_status`, `firecrawl_search` | ✅ live |
-| `POST /v2/batch/scrape` async job (+ status/cancel/errors) | ✅ live |
-| `POST /v2/search` (Exa/Tavily providers, optional result-scraping) | ✅ live |
+| `POST /v2/crawl` + `POST /v2/batch/scrape` async (Durable Object) + status/cancel/errors + **signed webhooks** | ✅ live |
+| `POST /v2/search` → multi-source (`web` / `news` / `images`) + categories + optional result-scraping (Exa/Tavily) | ✅ live |
 | `POST /v2/parse` — PDF (unpdf) + HTML/text → markdown | ✅ live |
-| `POST /v2/monitor` (+ run / checks) — recurring change detection on Cron | ✅ live |
 | `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources) | ✅ live |
-| `/interact` (interactive browser sessions) | ⛔ honest 501 |
-| MCP research tools, dashboard, Stripe billing | ⛔ roadmap |
+| `POST /v2/monitor` (+ run/checks) — recurring change detection on Cron **+ signed `monitor.changed` webhooks** | ✅ live |
+| `POST /v2/browser` + `/browser/:id/act` — **persistent interactive browser sessions** (state persists across requests) | ✅ live |
+| API keys (`POST /v2/keys`) + D1 credit ledger, **enforced spend ceilings** (402) + user spend limits | ✅ live |
+| SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, honest error envelopes, `/v1/*` adapters, `/concurrency-check` | ✅ live |
+| Remote **MCP** — scrape/map/crawl/search + developer/gov/research search + agent + monitor_* + research inspect/related/read | ✅ live |
+| Dev **console** `/app/` — keys, live credits, playground (scrape/map/search/crawl) **+ interactive-session playground** | ✅ live |
+| Stripe billing · custom domains · one-click Deploy button | ⛔ roadmap (needs a Stripe test key / the DNS zone) |
+| `find_tools` (Alexandria data-provider catalogue) | ⛔ proprietary upstream |
 
 Full surface map: [`docs/product-surface-inventory.md`](docs/product-surface-inventory.md). Every
-unbuilt endpoint returns an honest `501` with a pointer — never a fake success object.
+unbuilt endpoint returns an honest `501` with a pointer — never a fake success object. Real
+wall-clock numbers (static scrape P50 ≈ 100 ms, browser tier ≈ 1.5 s) live in
+[`docs/benchmarks.md`](docs/benchmarks.md), reproducible via `node e2e/benchmark/run.mjs`.
 
 ## Firecrawl compatibility
 
@@ -188,9 +194,13 @@ fuegol search "durable objects" --category developer
 FUEGOL_API_KEY=fgl_live_… fuegol crawl https://docs.site --limit 20 --wait
 ```
 
-**MCP** — live at `https://fuegol-mcp.manhattan.workers.dev` (`firecrawl_scrape` + `firecrawl_map`
-are real tools today; the rest are advertised for compatibility and return an explicit
-not-yet error). Stateless Streamable-HTTP JSON-RPC.
+**MCP** — live at `https://fuegol-mcp.manhattan.workers.dev`. Real working tools: `firecrawl_scrape`,
+`firecrawl_map`, `firecrawl_crawl`, `firecrawl_check_crawl_status`, `firecrawl_search` (web/news/images),
+`firecrawl_developer_search`, `firecrawl_gov_search`, `firecrawl_research_search_papers`,
+`firecrawl_research_inspect_paper` / `_related_papers` / `_read_paper` (Semantic Scholar),
+`firecrawl_agent`, and `firecrawl_monitor_create` / `_list` / `_run` / `_checks` (the MCP forwards your
+Bearer key so authed tools hit your ledger). Only `firecrawl_find_tools` (proprietary) is a stub.
+Stateless Streamable-HTTP JSON-RPC.
 
 ```jsonc
 { "mcpServers": { "fuegol": { "url": "https://fuegol-mcp.manhattan.workers.dev/v2/mcp" } } }
@@ -201,6 +211,38 @@ not-yet error). Stateless Streamable-HTTP JSON-RPC.
 curl -X POST https://fuegol-mcp.manhattan.workers.dev/v2/mcp -H 'content-type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"firecrawl_scrape","arguments":{"url":"https://example.com"}}}'
 ```
+
+**Interactive browser sessions** — drive a persistent headless browser; the tab's state (URL,
+cookies, form input) survives across separate requests:
+
+```sh
+# start a session, then click "next" + screenshot — the tab persists between calls
+ID=$(curl -s -X POST https://fuegol-api.manhattan.workers.dev/v2/browser \
+  -H 'content-type: application/json' -d '{"url":"https://quotes.toscrape.com/"}' | jq -r .id)
+curl -X POST https://fuegol-api.manhattan.workers.dev/v2/browser/$ID/act \
+  -H 'content-type: application/json' \
+  -d '{"actions":[{"type":"click","selector":"li.next a"},{"type":"screenshot"}]}'
+```
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant W as Workers API
+  participant DO as BrowserSession DO
+  participant BR as Browser Rendering
+  C->>W: POST /v2/browser {url}
+  W->>DO: create()
+  DO->>BR: launch(keep_alive) → navigate
+  DO-->>C: { id, url, title }
+  Note over C,BR: later request — tab still alive
+  C->>W: POST /v2/browser/:id/act {actions}
+  W->>DO: act(actions)
+  DO->>BR: reconnect(sessionId) → reattach live tab
+  BR-->>DO: click / type / screenshot
+  DO-->>C: { url, actCount, screenshot→R2 }
+```
+
+Or drive it visually in the [console playground](https://fuegol-web.manhattan.workers.dev/app/).
 
 ## Migrating from Firecrawl
 
@@ -247,7 +289,8 @@ pnpm install && cd apps/api && pnpm exec wrangler deploy
   schemes, and re-validates every redirect hop; optional DNS-over-HTTPS rebinding check.
 - Respects `robots.txt` and Cloudflare Content Signals. No CAPTCHA bypass, credential theft, private-
   network scanning, or paywall circumvention.
-- **Signed webhooks** (HMAC-SHA256, `x-fuegol-signature`) fire on crawl/batch completion with retries.
+- **Signed webhooks** (HMAC-SHA256, `x-fuegol-signature`) fire on crawl/batch completion **and on
+  monitor change detection** (`monitor.changed`), with retries. Webhook targets are SSRF-guarded.
 - Zero-data-retention mode, PII redaction, and per-tenant isolation are on the roadmap.
 
 ## Repository layout
