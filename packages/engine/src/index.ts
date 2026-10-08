@@ -14,6 +14,14 @@ export { htmlToMarkdown, type MarkdownContext } from './html-to-markdown';
 export { parseHtml, selectContent, extractLinks } from './extract-content';
 export { extractMetadata } from './metadata';
 export { browserAvailable, browserQuickAction } from './browser';
+export {
+  scrapeWithActions,
+  applyActions,
+  captureDocument,
+  puppeteerAvailable,
+  ActionError,
+  type ActionsOutput,
+} from './interact';
 export { extractWithAI, extractAvailable, type ExtractOptions } from './extract-ai';
 export { webSearch, searchAvailable, searchProviderName, type NormalizedResult } from './search';
 export { parseDocument, type ParseResult } from './parse';

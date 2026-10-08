@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@cloudflare/puppeteer": "^1.4.0",
     "@fuegol/contracts": "workspace:*",
     "node-html-parser": "^6.1.13",
     "unpdf": "^0.12.1",

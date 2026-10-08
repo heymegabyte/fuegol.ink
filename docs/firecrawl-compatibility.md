@@ -46,7 +46,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 
 | Method | Path (prefix `/v2`) | Purpose | Status |
 |---|---|---|---|
-| POST | `/scrape` | Scrape one URL (all formats) | 🟡 static markdown/html/rawHtml/links/summary/metadata + `{type:"json"}` AI extraction + **JS-rendered + screenshot→R2 + changeTracking (new/same/changed + diff)** live |
+| POST | `/scrape` | Scrape one URL (all formats) | 🟡 static markdown/html/rawHtml/links/summary/metadata + `{type:"json"}` AI extraction + **JS-rendered + screenshot→R2 + changeTracking (new/same/changed + diff) + `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf via `@cloudflare/puppeteer`)** live |
 | GET | `/scrape/:jobId` | Async scrape fetch | ⛔ |
 | POST | `/map` | Enumerate site URLs | ✅ sitemap + link discovery |
 | POST | `/crawl` | Start multi-page crawl (Durable-Object coordinator) | ✅ live |

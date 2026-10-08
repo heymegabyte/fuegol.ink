@@ -6,6 +6,7 @@ import { parseHtml, selectContent, extractLinks } from './extract-content';
 import { extractMetadata } from './metadata';
 import { htmlToMarkdown } from './html-to-markdown';
 import { browserAvailable, browserQuickAction, browserScreenshot } from './browser';
+import { scrapeWithActions, puppeteerAvailable } from './interact';
 import { extractWithAI, extractAvailable } from './extract-ai';
 import { planScrape, formatTypes } from './planner';
 import type { EngineEnv } from './types';
@@ -26,6 +27,18 @@ export async function scrape(request: ScrapeRequest, env: EngineEnv): Promise<Sc
   const plan = planScrape(options, env);
 
   if (plan.primary === 'browser') {
+    // Action sequences (click/type/scroll/screenshot/scrape/JS) need a driven browser.
+    if (options.actions && options.actions.length > 0) {
+      if (puppeteerAvailable(env)) {
+        return scrapeWithActions(options, env, formats);
+      }
+      const fallback = await browserScrape(options, env, formats);
+      fallback.document.warning = appendWarning(
+        fallback.document.warning,
+        'actions require the Browser Rendering binding (only a REST token is configured); returned a plain render.',
+      );
+      return fallback;
+    }
     return browserScrape(options, env, formats);
   }
 

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { ScrapeRequestSchema } from '@fuegol/contracts';
-import { scrape, SsrfError } from '@fuegol/engine';
+import { scrape, SsrfError, ActionError } from '@fuegol/engine';
 import { engineEnv, type Env } from '../env';
 import { trackChange } from '../lib/change';
 import { fail, parseBody } from '../lib/respond';
@@ -48,6 +48,7 @@ route.post('/scrape', async (c) => {
     return c.json({ success: true as const, data: document });
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
+    if (err instanceof ActionError) return fail(c, 400, err.message, 'SCRAPE_ACTION_ERROR');
     const msg = err instanceof Error ? err.message : 'Unknown scrape error';
     if (/timeout|timed out|aborted|signal/i.test(msg)) {
       return fail(c, 408, 'Scrape timed out', 'SCRAPE_TIMEOUT');
