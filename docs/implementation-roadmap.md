@@ -36,7 +36,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
 - ✅ **Category search via Exa scoping**: `/v2/search` `categories` (developer/github → GitHub, research → research-paper, pdf, gov → gov-domain list) + MCP `firecrawl_developer_search` / `firecrawl_gov_search` / `firecrawl_research_search_papers` now real (verified: NeurIPS/ACM papers, ecfr/congress.gov, github). ✅ research inspect/related/read via Semantic Scholar graph API (free-tier rate-limited, 429-retried). ⛔ remaining: news/images sources, find_tools (Alexandria catalogue), AI change mode
 - ✅ **Monitors** (D1 `monitors`/`monitor_checks` + changeTracking + Cron `*/15`): `POST /v2/monitor` + list/get/delete/`:id/run`/`:id/checks`; change detection verified (new→changed), migration 0004
-- ⛔ Tenant Cloudflare AI Search indexing; monitor webhook alerts
+- ✅ **Monitor webhook alerts** (migration 0005): on `changed`, deliver a signed `monitor.changed` HMAC-SHA256 webhook (reuses the crawl/batch delivery path) carrying the changed document + diff + metadata; SSRF-guarded target; optional custom headers. **12/12 prod E2E** (`node e2e/monitor-webhook/run.mjs`): baseline→no alert, change→delivered, signature verified against an external sink. (Delivery targets must be external — the Worker cannot self-fetch its own `/webhook-sink`, CF 1042.)
+- ⛔ Tenant Cloudflare AI Search indexing (AutoRAG)
 
 ## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)
 - ✅ Stateless Streamable-HTTP JSON-RPC server **live at https://fuegol-mcp.manhattan.workers.dev**

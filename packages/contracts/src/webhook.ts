@@ -22,6 +22,7 @@ export const WebhookEventSchema = z.object({
     'batch_scrape.page',
     'batch_scrape.completed',
     'batch_scrape.failed',
+    'monitor.changed',
   ]),
   id: z.string(),
   data: z.array(DocumentSchema).optional(),

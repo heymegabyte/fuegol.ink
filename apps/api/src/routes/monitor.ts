@@ -22,11 +22,19 @@ route.post('/monitor', async (c) => {
   if (denied) return denied;
   const parsed = await parseBody(
     c,
-    z.object({ url: z.string().url(), name: z.string().max(120).optional(), tag: z.string().max(60).optional() }),
+    z.object({
+      url: z.string().url(),
+      name: z.string().max(120).optional(),
+      tag: z.string().max(60).optional(),
+      webhook: z.string().url().optional(),
+      webhookHeaders: z.record(z.string(), z.string()).optional(),
+    }),
   );
   if (!parsed.ok) return parsed.response;
   try {
     assertSafeUrl(parsed.data.url);
+    // The webhook target is a URL we will POST to — SSRF-guard it too (no internal endpoints).
+    if (parsed.data.webhook) assertSafeUrl(parsed.data.webhook);
   } catch (e) {
     if (e instanceof SsrfError) return fail(c, 400, e.message, 'unsafe_domain_blocked');
   }
@@ -35,6 +43,8 @@ route.post('/monitor', async (c) => {
     url: parsed.data.url,
     name: parsed.data.name,
     tag: parsed.data.tag,
+    webhook: parsed.data.webhook,
+    webhookHeaders: parsed.data.webhookHeaders,
   });
   return c.json({ success: true as const, monitor });
 });
