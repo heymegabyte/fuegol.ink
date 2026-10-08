@@ -21,7 +21,11 @@ async function scrape(body) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   });
-  return { status: res.status, strategy: res.headers.get('x-fuegol-strategy'), json: await res.json() };
+  return {
+    status: res.status,
+    strategy: res.headers.get('x-fuegol-strategy'),
+    json: await res.json(),
+  };
 }
 
 async function headOk(url, wantType) {
@@ -49,7 +53,11 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
     ],
   });
   ok('tier is browser-actions', r.strategy === 'browser-actions', r.strategy || '');
-  ok('click navigated to /page/2/', (r.json?.data?.url || '').includes('/page/2'), r.json?.data?.url);
+  ok(
+    'click navigated to /page/2/',
+    (r.json?.data?.url || '').includes('/page/2'),
+    r.json?.data?.url,
+  );
 }
 
 // 2. write → read back via JS
@@ -60,7 +68,11 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
     actions: [
       { type: 'write', selector: '#username', text: 'fuegoltest' },
       { type: 'write', selector: '#password', text: 'secret123' },
-      { type: 'executeJavascript', script: "document.querySelector('#username').value + ':' + document.querySelector('#password').value" },
+      {
+        type: 'executeJavascript',
+        script:
+          "document.querySelector('#username').value + ':' + document.querySelector('#password').value",
+      },
     ],
   });
   const v = r.json?.data?.actions?.javascriptReturns?.[0]?.value;
@@ -72,7 +84,11 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
   const r = await scrape({
     url: 'https://quotes.toscrape.com/',
     formats: ['markdown'],
-    actions: [{ type: 'executeJavascript', script: 'document.title' }, { type: 'screenshot' }, { type: 'scrape' }],
+    actions: [
+      { type: 'executeJavascript', script: 'document.title' },
+      { type: 'screenshot' },
+      { type: 'scrape' },
+    ],
   });
   const a = r.json?.data?.actions || {};
   ok('executeJavascript returned title', a.javascriptReturns?.[0]?.value === 'Quotes to Scrape');
@@ -81,7 +97,11 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
   ok('screenshot artifact url present', Boolean(shot), shot || '');
   if (shot) {
     const s = await headOk(shot, 'png');
-    ok('screenshot serves a real PNG', s.status === 200 && s.magic, `HTTP ${s.status} ${s.type} ${s.size}B`);
+    ok(
+      'screenshot serves a real PNG',
+      s.status === 200 && s.magic,
+      `HTTP ${s.status} ${s.type} ${s.size}B`,
+    );
   }
 }
 
@@ -103,12 +123,20 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
 
 // 5. pdf action → real PDF artifact
 {
-  const r = await scrape({ url: 'https://example.com/', formats: ['markdown'], actions: [{ type: 'pdf' }] });
+  const r = await scrape({
+    url: 'https://example.com/',
+    formats: ['markdown'],
+    actions: [{ type: 'pdf' }],
+  });
   const pdf = r.json?.data?.actions?.pdfs?.[0];
   ok('pdf artifact url present', Boolean(pdf), pdf || '');
   if (pdf) {
     const s = await headOk(pdf, 'pdf');
-    ok('pdf serves a real document', s.status === 200 && s.magic, `HTTP ${s.status} ${s.type} ${s.size}B`);
+    ok(
+      'pdf serves a real document',
+      s.status === 200 && s.magic,
+      `HTTP ${s.status} ${s.type} ${s.size}B`,
+    );
   }
 }
 
@@ -119,7 +147,11 @@ console.log(`\nbrowser actions E2E → ${API}\n`);
     formats: ['markdown'],
     actions: [{ type: 'click', selector: '#does-not-exist-xyz' }],
   });
-  ok('bad selector fails honestly', r.json?.success === false && r.json?.code === 'SCRAPE_ACTION_ERROR', r.json?.code || '');
+  ok(
+    'bad selector fails honestly',
+    r.json?.success === false && r.json?.code === 'SCRAPE_ACTION_ERROR',
+    r.json?.code || '',
+  );
 }
 
 console.log(`\n${pass} passed, ${fail} failed\n`);

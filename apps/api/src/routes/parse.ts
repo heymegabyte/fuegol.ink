@@ -17,7 +17,12 @@ function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
     const denied = requireAuth(c);
     if (denied) return denied;
   } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-    return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+    return fail(
+      c,
+      429,
+      'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+      'BAD_REQUEST',
+    );
   }
   return null;
 }
@@ -48,7 +53,8 @@ route.post('/parse', async (c) => {
         type?: string;
         name?: string;
       };
-      if (file.size > MAX_BYTES) return fail(c, 400, 'File exceeds the 50 MB limit.', 'BAD_REQUEST');
+      if (file.size > MAX_BYTES)
+        return fail(c, 400, 'File exceeds the 50 MB limit.', 'BAD_REQUEST');
       bytes = await file.arrayBuffer();
       docContentType = file.type ?? '';
       baseUrl = file.name ?? '';
@@ -59,7 +65,8 @@ route.post('/parse', async (c) => {
         userAgent: c.env.USER_AGENT,
         timeoutMs: 45000,
       });
-      if (!response.ok) return fail(c, 502, `Failed to fetch document (${response.status}).`, 'SCRAPE_SITE_ERROR');
+      if (!response.ok)
+        return fail(c, 502, `Failed to fetch document (${response.status}).`, 'SCRAPE_SITE_ERROR');
       const len = Number(response.headers.get('content-length') ?? 0);
       if (len > MAX_BYTES) return fail(c, 400, 'Document exceeds the 50 MB limit.', 'BAD_REQUEST');
       bytes = await response.arrayBuffer();
@@ -68,7 +75,12 @@ route.post('/parse', async (c) => {
     }
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
-    return fail(c, 400, err instanceof Error ? err.message : 'Invalid parse request', 'BAD_REQUEST');
+    return fail(
+      c,
+      400,
+      err instanceof Error ? err.message : 'Invalid parse request',
+      'BAD_REQUEST',
+    );
   }
 
   try {
@@ -77,7 +89,12 @@ route.post('/parse', async (c) => {
     if (result.pages && result.pages.length > 1) data.pages = result.pages;
     return c.json({ success: true as const, data });
   } catch (err) {
-    return fail(c, 422, err instanceof Error ? err.message : 'Failed to parse document', 'BAD_REQUEST');
+    return fail(
+      c,
+      422,
+      err instanceof Error ? err.message : 'Failed to parse document',
+      'BAD_REQUEST',
+    );
   }
 });
 

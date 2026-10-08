@@ -27,7 +27,10 @@ describe('parseDocument', () => {
 
   it('throws an explicit error on unsupported types', async () => {
     await expect(
-      parseDocument(enc('x'), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+      parseDocument(
+        enc('x'),
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
     ).rejects.toThrow(/Unsupported/);
   });
 });

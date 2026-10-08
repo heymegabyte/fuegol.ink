@@ -17,7 +17,12 @@ function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
     const denied = requireAuth(c);
     if (denied) return denied;
   } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-    return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+    return fail(
+      c,
+      429,
+      'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+      'BAD_REQUEST',
+    );
   }
   return null;
 }
@@ -33,7 +38,13 @@ function origin(c: Context<{ Bindings: Env; Variables: Vars }>): string {
 route.post('/crawl', async (c) => {
   const denied = gate(c);
   if (denied) return denied;
-  if (!c.env.CRAWL) return fail(c, 501, 'Crawl requires the CRAWL Durable Object binding (not provisioned on this deployment).', 'UNKNOWN_ERROR');
+  if (!c.env.CRAWL)
+    return fail(
+      c,
+      501,
+      'Crawl requires the CRAWL Durable Object binding (not provisioned on this deployment).',
+      'UNKNOWN_ERROR',
+    );
   const parsed = await parseBody(c, CrawlRequestSchema);
   if (!parsed.ok) return parsed.response;
 
@@ -43,7 +54,12 @@ route.post('/crawl', async (c) => {
     await stub.start(parsed.data, id);
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
-    return fail(c, 500, err instanceof Error ? err.message : 'Failed to start crawl', 'CRAWL_DENIAL');
+    return fail(
+      c,
+      500,
+      err instanceof Error ? err.message : 'Failed to start crawl',
+      'CRAWL_DENIAL',
+    );
   }
   return c.json({ success: true as const, id, url: `${origin(c)}/v2/crawl/${id}` });
 });

@@ -3,3 +3,6 @@ dist/
 .wrangler/
 *.webp
 *.png
+# Hand-authored cinematic static site + console (intentionally compact inline CSS/JS —
+# prettier would expand it into a large, unwanted diff). Formatting is owned by hand here.
+apps/web/public/

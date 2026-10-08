@@ -32,7 +32,12 @@ export async function deliverWebhook(
   };
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const res = await fetch(cfg.url, { method: 'POST', headers, body, signal: AbortSignal.timeout(10000) });
+      const res = await fetch(cfg.url, {
+        method: 'POST',
+        headers,
+        body,
+        signal: AbortSignal.timeout(10000),
+      });
       if (res.ok) return true;
     } catch {
       /* retry */

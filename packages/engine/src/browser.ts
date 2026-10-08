@@ -54,7 +54,10 @@ export async function browserScreenshot(
         `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/browser-rendering/screenshot`,
         {
           method: 'POST',
-          headers: { authorization: `Bearer ${env.CF_BROWSER_TOKEN}`, 'content-type': 'application/json' },
+          headers: {
+            authorization: `Bearer ${env.CF_BROWSER_TOKEN}`,
+            'content-type': 'application/json',
+          },
           body: JSON.stringify({ url, ...opts }),
           signal: AbortSignal.timeout(60000),
         },
@@ -67,4 +70,3 @@ export async function browserScreenshot(
   }
   return null;
 }
-

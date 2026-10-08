@@ -18,7 +18,14 @@ function periodStartIso(): string {
 
 export async function recordUsage(
   db: D1Database,
-  event: { keyId: string; operation: string; credits: number; url?: string; jobId?: string; success?: boolean },
+  event: {
+    keyId: string;
+    operation: string;
+    credits: number;
+    url?: string;
+    jobId?: string;
+    success?: boolean;
+  },
 ): Promise<void> {
   await db
     .prepare(
@@ -47,7 +54,11 @@ export async function creditsUsedThisPeriod(db: D1Database, keyId: string): Prom
   return Number(row?.used ?? 0);
 }
 
-export async function usageHistory(db: D1Database, keyId: string, limit = 100): Promise<UsageRow[]> {
+export async function usageHistory(
+  db: D1Database,
+  keyId: string,
+  limit = 100,
+): Promise<UsageRow[]> {
   const { results } = await db
     .prepare(
       'SELECT operation, credits, url, job_id, success, created_at FROM usage_events WHERE key_id = ? ORDER BY created_at DESC LIMIT ?',
@@ -58,7 +69,10 @@ export async function usageHistory(db: D1Database, keyId: string, limit = 100): 
 }
 
 /** Effective credit cap = min(plan credits, user spend limit if set). */
-export function effectiveCap(monthlyCredits: number, spendLimit: number | null | undefined): number {
+export function effectiveCap(
+  monthlyCredits: number,
+  spendLimit: number | null | undefined,
+): number {
   if (spendLimit == null) return monthlyCredits;
   return Math.min(monthlyCredits, Math.max(0, spendLimit));
 }

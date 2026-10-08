@@ -41,7 +41,11 @@ export async function readCache(env: Env, key: string, maxAgeMs: number): Promis
     const age = Date.now() - stored.cachedAt;
     if (age < 0 || age > maxAgeMs) return null;
     const doc = stored.document;
-    doc.metadata = { ...doc.metadata, cacheState: 'hit', cachedAt: new Date(stored.cachedAt).toISOString() };
+    doc.metadata = {
+      ...doc.metadata,
+      cacheState: 'hit',
+      cachedAt: new Date(stored.cachedAt).toISOString(),
+    };
     return doc;
   } catch {
     return null;

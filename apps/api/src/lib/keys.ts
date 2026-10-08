@@ -40,7 +40,15 @@ export async function createKey(
     .prepare(
       'INSERT INTO api_keys (id, key_hash, key_prefix, name, plan, monthly_credits, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
-    .bind(id, await sha256hex(key), prefix, opts.name ?? null, plan, monthlyCredits, new Date().toISOString())
+    .bind(
+      id,
+      await sha256hex(key),
+      prefix,
+      opts.name ?? null,
+      plan,
+      monthlyCredits,
+      new Date().toISOString(),
+    )
     .run();
   return { key, id, plan, monthlyCredits, prefix };
 }
@@ -53,11 +61,20 @@ export async function resolveKey(db: D1Database, key: string): Promise<ResolvedK
     .bind(await sha256hex(key))
     .first<{ id: string; plan: string; monthlyCredits: number; spendLimit: number | null }>();
   return row
-    ? { id: row.id, plan: row.plan, monthlyCredits: row.monthlyCredits, spendLimit: row.spendLimit ?? null }
+    ? {
+        id: row.id,
+        plan: row.plan,
+        monthlyCredits: row.monthlyCredits,
+        spendLimit: row.spendLimit ?? null,
+      }
     : null;
 }
 
 /** Set (or clear with null) the user-configurable hard spend ceiling for a key. */
-export async function setSpendLimit(db: D1Database, keyId: string, limit: number | null): Promise<void> {
+export async function setSpendLimit(
+  db: D1Database,
+  keyId: string,
+  limit: number | null,
+): Promise<void> {
   await db.prepare('UPDATE api_keys SET spend_limit = ? WHERE id = ?').bind(limit, keyId).run();
 }

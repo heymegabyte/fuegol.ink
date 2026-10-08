@@ -54,14 +54,20 @@ export async function parseDocument(
   if (ct.includes('html') || ct === 'application/xml' || ct === 'text/xml' || ct.endsWith('+xml')) {
     const html = new TextDecoder().decode(bytes);
     const content = selectContent(parseHtml(html), { onlyMainContent: true });
-    return { markdown: htmlToMarkdown(content, { baseUrl }), metadata: { contentType: 'text/html' } };
+    return {
+      markdown: htmlToMarkdown(content, { baseUrl }),
+      metadata: { contentType: 'text/html' },
+    };
   }
 
   if (ct.includes('text') || ct.includes('markdown') || ct.includes('json') || ct === '') {
     const decoded = new TextDecoder().decode(bytes);
     if (looksLikeHtml(decoded)) {
       const content = selectContent(parseHtml(decoded), { onlyMainContent: true });
-      return { markdown: htmlToMarkdown(content, { baseUrl }), metadata: { contentType: 'text/html' } };
+      return {
+        markdown: htmlToMarkdown(content, { baseUrl }),
+        metadata: { contentType: 'text/html' },
+      };
     }
     return { markdown: decoded.trim(), metadata: { contentType: ct || 'text/plain' } };
   }

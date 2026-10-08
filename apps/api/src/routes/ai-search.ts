@@ -16,11 +16,26 @@ type Ctx = Context<{ Bindings: Env; Variables: Vars }>;
 
 function gate(c: Ctx): { denied?: Response; tenant?: string } {
   if (!aiSearchAvailable(c.env)) {
-    return { denied: fail(c, 501, 'AI Search requires the Workers AI + Vectorize bindings (not configured on this deployment).', 'UNKNOWN_ERROR') };
+    return {
+      denied: fail(
+        c,
+        501,
+        'AI Search requires the Workers AI + Vectorize bindings (not configured on this deployment).',
+        'UNKNOWN_ERROR',
+      ),
+    };
   }
   const p = c.get('principal');
   if (!p.authed) return { denied: requireAuth(c)! };
-  if (!p.keyId) return { denied: fail(c, 501, 'AI Search requires a D1-backed fuegol.ink key (your index is per key).', 'UNKNOWN_ERROR') };
+  if (!p.keyId)
+    return {
+      denied: fail(
+        c,
+        501,
+        'AI Search requires a D1-backed fuegol.ink key (your index is per key).',
+        'UNKNOWN_ERROR',
+      ),
+    };
   return { tenant: p.keyId };
 }
 
@@ -50,13 +65,21 @@ route.post('/ai-search/index', async (c) => {
       assertSafeUrl(u);
       const { document } = await scrape({ url: u, formats: ['markdown'] } as never, eng);
       if (document.markdown) {
-        indexed += await indexDoc(c.env, tenant!, { url: document.url ?? u, title: document.title, markdown: document.markdown });
+        indexed += await indexDoc(c.env, tenant!, {
+          url: document.url ?? u,
+          title: document.title,
+          markdown: document.markdown,
+        });
         documents.push(document.url ?? u);
       }
     }
     if (parsed.data.text) {
       const u = `text://${parsed.data.title ?? 'inline'}`;
-      indexed += await indexDoc(c.env, tenant!, { url: u, title: parsed.data.title, markdown: parsed.data.text });
+      indexed += await indexDoc(c.env, tenant!, {
+        url: u,
+        title: parsed.data.title,
+        markdown: parsed.data.text,
+      });
       documents.push(u);
     }
     return c.json({ success: true as const, indexed, documents });
@@ -81,7 +104,10 @@ route.post('/ai-search/query', async (c) => {
   if (!parsed.ok) return parsed.response;
   try {
     const sources = await queryContent(c.env, tenant!, parsed.data.query, parsed.data.topK);
-    const answer = parsed.data.synthesize && sources.length ? await ragAnswer(c.env, parsed.data.query, sources) : undefined;
+    const answer =
+      parsed.data.synthesize && sources.length
+        ? await ragAnswer(c.env, parsed.data.query, sources)
+        : undefined;
     return c.json({ success: true as const, answer, sources });
   } catch (e) {
     return fail(c, 500, e instanceof Error ? e.message : 'query failed', 'UNKNOWN_ERROR');

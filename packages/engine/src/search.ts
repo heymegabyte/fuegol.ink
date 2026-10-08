@@ -25,10 +25,19 @@ function parseTbs(tbs?: string): { exaStart?: string; tavilyRange?: TavilyRange 
   const unit = m?.[1];
   if (!unit) return {}; // absent or an unsupported form (e.g. custom cdr:…) → no filter
   const hoursMap: Record<string, number> = { h: 1, d: 24, w: 168, m: 720, y: 8760 };
-  const rangeMap: Record<string, TavilyRange> = { h: 'day', d: 'day', w: 'week', m: 'month', y: 'year' };
+  const rangeMap: Record<string, TavilyRange> = {
+    h: 'day',
+    d: 'day',
+    w: 'week',
+    m: 'month',
+    y: 'year',
+  };
   const hours = hoursMap[unit];
   if (hours === undefined) return {};
-  return { exaStart: new Date(Date.now() - hours * 3_600_000).toISOString(), tavilyRange: rangeMap[unit] };
+  return {
+    exaStart: new Date(Date.now() - hours * 3_600_000).toISOString(),
+    tavilyRange: rangeMap[unit],
+  };
 }
 
 export interface NormalizedResult {
@@ -73,7 +82,8 @@ export async function webSearch(
   env: EngineEnv,
 ): Promise<SearchSources> {
   const provider = searchProviderName(env);
-  if (!provider) throw new Error('No search provider configured (set EXA_API_KEY or TAVILY_API_KEY).');
+  if (!provider)
+    throw new Error('No search provider configured (set EXA_API_KEY or TAVILY_API_KEY).');
   const limit = Math.min(Math.max(opts.limit ?? 10, 1), 100);
   const sources = opts.sources && opts.sources.length ? opts.sources : ['web'];
   const { exaStart, tavilyRange } = parseTbs(opts.tbs);
@@ -83,14 +93,30 @@ export async function webSearch(
     // Category/domain scoping is Exa-only; Tavily fallback does a plain search.
     out.web =
       provider === 'exa'
-        ? await exaSearch(query, limit, env.EXA_API_KEY!, opts.category, opts.includeDomains, exaStart)
+        ? await exaSearch(
+            query,
+            limit,
+            env.EXA_API_KEY!,
+            opts.category,
+            opts.includeDomains,
+            exaStart,
+          )
         : await tavilySearch(query, limit, env.TAVILY_API_KEY!, undefined, tavilyRange);
   }
   if (sources.includes('news')) {
     // News: prefer Tavily's purpose-built `news` topic (actual articles, recency-ranked);
     // fall back to Exa's `news` category when Tavily isn't configured.
-    if (env.TAVILY_API_KEY) out.news = await tavilySearch(query, limit, env.TAVILY_API_KEY, 'news', tavilyRange);
-    else if (env.EXA_API_KEY) out.news = await exaSearch(query, limit, env.EXA_API_KEY, 'news', opts.includeDomains, exaStart);
+    if (env.TAVILY_API_KEY)
+      out.news = await tavilySearch(query, limit, env.TAVILY_API_KEY, 'news', tavilyRange);
+    else if (env.EXA_API_KEY)
+      out.news = await exaSearch(
+        query,
+        limit,
+        env.EXA_API_KEY,
+        'news',
+        opts.includeDomains,
+        exaStart,
+      );
     else out.news = [];
   }
   if (sources.includes('images')) {
@@ -123,7 +149,9 @@ async function exaSearch(
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) {
-    throw new Error(`Exa search failed (${res.status}): ${(await res.text().catch(() => '')).slice(0, 160)}`);
+    throw new Error(
+      `Exa search failed (${res.status}): ${(await res.text().catch(() => '')).slice(0, 160)}`,
+    );
   }
   const body = (await res.json()) as {
     results?: Array<{ title?: string; url: string; text?: string; publishedDate?: string }>;
@@ -183,7 +211,9 @@ async function tavilyImages(query: string, limit: number, key: string): Promise<
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`Tavily image search failed (${res.status})`);
-  const body = (await res.json()) as { images?: Array<{ url: string; description?: string } | string> };
+  const body = (await res.json()) as {
+    images?: Array<{ url: string; description?: string } | string>;
+  };
   return (body.images ?? []).map((im, i) =>
     typeof im === 'string'
       ? { url: im, imageUrl: im, position: i + 1 }

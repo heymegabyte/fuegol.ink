@@ -11,7 +11,13 @@ const ok = (name, cond, detail = '') => {
   console.log(`  ${cond ? '✅' : '❌'} ${name}${detail ? ` — ${detail}` : ''}`);
 };
 
-const keyRes = await (await fetch(`${API}/v2/keys`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"name":"e2e-change-json"}' })).json();
+const keyRes = await (
+  await fetch(`${API}/v2/keys`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{"name":"e2e-change-json"}',
+  })
+).json();
 const H = { 'content-type': 'application/json', authorization: `Bearer ${keyRes.apiKey}` };
 const tag = `e2e-json-${crypto.randomUUID().slice(0, 8)}`;
 const url = 'https://quotes.toscrape.com/random';
@@ -20,7 +26,10 @@ const scrape = async () =>
     await fetch(`${API}/v2/scrape`, {
       method: 'POST',
       headers: H,
-      body: JSON.stringify({ url, formats: ['markdown', { type: 'changeTracking', modes: ['git-diff', 'json'], tag }] }),
+      body: JSON.stringify({
+        url,
+        formats: ['markdown', { type: 'changeTracking', modes: ['git-diff', 'json'], tag }],
+      }),
     })
   ).json();
 
@@ -41,13 +50,24 @@ for (let i = 0; i < 8 && !changed; i += 1) {
 }
 ok('detected a change within 8 scrapes', Boolean(changed), changed?.changeStatus);
 if (changed) {
-  ok('git-diff present on change', typeof changed.diff?.text === 'string' && changed.diff.text.length > 0);
+  ok(
+    'git-diff present on change',
+    typeof changed.diff?.text === 'string' && changed.diff.text.length > 0,
+  );
   const j = changed.json;
   ok('AI json diff is a structured object', j && typeof j === 'object' && !Array.isArray(j));
-  ok('json diff has a summary string', typeof j?.summary === 'string' && j.summary.length > 0, (j?.summary || '').slice(0, 80));
+  ok(
+    'json diff has a summary string',
+    typeof j?.summary === 'string' && j.summary.length > 0,
+    (j?.summary || '').slice(0, 80),
+  );
   ok('json diff has a changes array', Array.isArray(j?.changes));
   // Honesty: the structured diff must not dump the full previous page content.
-  ok('json diff does not leak raw page content', JSON.stringify(j).length < 4000, `${JSON.stringify(j).length} bytes`);
+  ok(
+    'json diff does not leak raw page content',
+    JSON.stringify(j).length < 4000,
+    `${JSON.stringify(j).length} bytes`,
+  );
 }
 
 console.log(`\n${pass} passed, ${fail} failed\n`);

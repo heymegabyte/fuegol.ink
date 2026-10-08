@@ -15,7 +15,12 @@ route.post('/map', async (c) => {
       const denied = requireAuth(c);
       if (denied) return denied;
     } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-      return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+      return fail(
+        c,
+        429,
+        'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+        'BAD_REQUEST',
+      );
     }
   }
 
@@ -28,7 +33,8 @@ route.post('/map', async (c) => {
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
     const msg = err instanceof Error ? err.message : 'Unknown map error';
-    if (/timeout|timed out|aborted|signal/i.test(msg)) return fail(c, 408, 'Map timed out', 'MAP_TIMEOUT');
+    if (/timeout|timed out|aborted|signal/i.test(msg))
+      return fail(c, 408, 'Map timed out', 'MAP_TIMEOUT');
     return fail(c, 500, msg, 'MAP_FAILED');
   }
 });

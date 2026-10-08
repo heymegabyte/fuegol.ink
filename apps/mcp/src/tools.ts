@@ -7,10 +7,19 @@ const CRAWL_TEXT_CAP = 12_000;
 /** Call the REST API via the service binding (preferred) or public fetch (self-host
  *  fallback). Forwards the caller's Authorization header so authed tools hit the
  *  user's key + credit ledger. */
-async function apiFetch(env: Env, path: string, init: RequestInit = {}, auth?: string): Promise<Response> {
-  const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
+async function apiFetch(
+  env: Env,
+  path: string,
+  init: RequestInit = {},
+  auth?: string,
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> | undefined),
+  };
   if (auth) headers.authorization = auth;
-  const url = env.API ? `https://fuegol-api.internal${path}` : `${env.API_BASE || DEFAULT_API_BASE}${path}`;
+  const url = env.API
+    ? `https://fuegol-api.internal${path}`
+    : `${env.API_BASE || DEFAULT_API_BASE}${path}`;
   const req = new Request(url, { ...init, headers });
   return env.API ? env.API.fetch(req) : fetch(req);
 }
@@ -22,7 +31,10 @@ const sleepMs = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 async function s2Fetch(url: string): Promise<Record<string, unknown>> {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const res = await fetch(url, {
-      headers: { accept: 'application/json', 'user-agent': 'fuegolbot/0.1 (+https://fuegol.ink/bot)' },
+      headers: {
+        accept: 'application/json',
+        'user-agent': 'fuegolbot/0.1 (+https://fuegol.ink/bot)',
+      },
       signal: AbortSignal.timeout(15000),
     });
     if (res.status === 429) {
@@ -37,10 +49,20 @@ async function s2Fetch(url: string): Promise<Record<string, unknown>> {
 const S2 = 'https://api.semanticscholar.org/graph/v1';
 
 /** Start an agent job, poll to a terminal state, return the synthesized result. */
-async function proxyAgent(env: Env, args: Record<string, unknown>, auth?: string): Promise<McpContent> {
-  const res = await apiFetch(env, '/v2/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(args) }, auth);
+async function proxyAgent(
+  env: Env,
+  args: Record<string, unknown>,
+  auth?: string,
+): Promise<McpContent> {
+  const res = await apiFetch(
+    env,
+    '/v2/agent',
+    { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(args) },
+    auth,
+  );
   const start = (await res.json()) as { id?: string; error?: string };
-  if (!res.ok || !start.id) return [{ type: 'text', text: `Agent failed: ${start.error ?? res.status}` }];
+  if (!res.ok || !start.id)
+    return [{ type: 'text', text: `Agent failed: ${start.error ?? res.status}` }];
   let last: Record<string, unknown> = {};
   for (let i = 0; i < 20; i += 1) {
     await sleepMs(1500);
@@ -48,29 +70,70 @@ async function proxyAgent(env: Env, args: Record<string, unknown>, auth?: string
     last = (await s.json()) as Record<string, unknown>;
     if (typeof last.status === 'string' && last.status !== 'processing') break;
   }
-  return [{ type: 'text', text: JSON.stringify({ status: last.status, data: last.data, sources: last.sources }, null, 2) }];
+  return [
+    {
+      type: 'text',
+      text: JSON.stringify(
+        { status: last.status, data: last.data, sources: last.sources },
+        null,
+        2,
+      ),
+    },
+  ];
 }
 
 /** Proxy a monitor action to the authed REST API. */
-async function proxyMonitor(env: Env, method: string, path: string, body: unknown, auth?: string): Promise<McpContent> {
-  const res = await apiFetch(env, path, body ? { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : { method }, auth);
+async function proxyMonitor(
+  env: Env,
+  method: string,
+  path: string,
+  body: unknown,
+  auth?: string,
+): Promise<McpContent> {
+  const res = await apiFetch(
+    env,
+    path,
+    body
+      ? { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }
+      : { method },
+    auth,
+  );
   const json = await res.json();
-  if (res.status === 401) return [{ type: 'text', text: 'Monitors require a fuegol.ink API key. Send it as Authorization: Bearer fgl_live_… to this MCP server.' }];
+  if (res.status === 401)
+    return [
+      {
+        type: 'text',
+        text: 'Monitors require a fuegol.ink API key. Send it as Authorization: Bearer fgl_live_… to this MCP server.',
+      },
+    ];
   return [{ type: 'text', text: JSON.stringify(json, null, 2) }];
 }
 
 /** Category-scoped search via /v2/search (Exa category/domain scoping under the hood). */
-async function proxySearch(env: Env, query: string, categories: string[], k: number): Promise<McpContent> {
+async function proxySearch(
+  env: Env,
+  query: string,
+  categories: string[],
+  k: number,
+): Promise<McpContent> {
   const res = await apiFetch(env, '/v2/search', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ query, limit: k, categories }),
   });
-  const body = (await res.json()) as { success?: boolean; error?: string; data?: { web?: Array<Record<string, unknown>> } };
-  if (!res.ok || body.success === false) return [{ type: 'text', text: `Search failed: ${body.error ?? res.status}` }];
+  const body = (await res.json()) as {
+    success?: boolean;
+    error?: string;
+    data?: { web?: Array<Record<string, unknown>> };
+  };
+  if (!res.ok || body.success === false)
+    return [{ type: 'text', text: `Search failed: ${body.error ?? res.status}` }];
   const web = body.data?.web ?? [];
   const text = web
-    .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`)
+    .map(
+      (r, i) =>
+        `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`,
+    )
     .join('\n\n');
   return [{ type: 'text', text: text || 'No results.' }];
 }
@@ -103,7 +166,10 @@ const scrapeSchema = {
       items: { type: 'string', enum: ['markdown', 'html', 'rawHtml', 'links', 'summary'] },
       description: 'Output formats (default ["markdown"]).',
     },
-    onlyMainContent: { type: 'boolean', description: 'Strip nav/footer/boilerplate (default true).' },
+    onlyMainContent: {
+      type: 'boolean',
+      description: 'Strip nav/footer/boilerplate (default true).',
+    },
     includeTags: { type: 'array', items: { type: 'string' } },
     excludeTags: { type: 'array', items: { type: 'string' } },
     waitFor: { type: 'number' },
@@ -191,10 +257,16 @@ export const TOOLS: McpTool[] = [
         rows && rows.length
           ? `## ${label}\n` +
             rows
-              .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`.trim())
+              .map((r, i) =>
+                `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`.trim(),
+              )
               .join('\n\n')
           : '';
-      const text = [section('Web', body.data?.web), section('News', body.data?.news), section('Images', body.data?.images)]
+      const text = [
+        section('Web', body.data?.web),
+        section('News', body.data?.news),
+        section('Images', body.data?.images),
+      ]
         .filter(Boolean)
         .join('\n\n');
       return [{ type: 'text', text: text || 'No results.' }];
@@ -227,7 +299,9 @@ export const TOOLS: McpTool[] = [
       });
       const start = (await res.json()) as { id?: string; error?: string };
       if (!res.ok || !start.id) {
-        return [{ type: 'text', text: `Crawl failed to start: ${start.error ?? JSON.stringify(start)}` }];
+        return [
+          { type: 'text', text: `Crawl failed to start: ${start.error ?? JSON.stringify(start)}` },
+        ];
       }
       const id = start.id;
       let last: Record<string, unknown> = {};
@@ -244,7 +318,8 @@ export const TOOLS: McpTool[] = [
           return `### ${i + 1}. ${(meta.sourceURL as string) ?? (d.url as string) ?? ''}\n${(d.markdown as string) ?? ''}`;
         })
         .join('\n\n---\n\n');
-      if (body.length > CRAWL_TEXT_CAP) body = `${body.slice(0, CRAWL_TEXT_CAP)}\n\n…[truncated — fetch more via firecrawl_check_crawl_status]`;
+      if (body.length > CRAWL_TEXT_CAP)
+        body = `${body.slice(0, CRAWL_TEXT_CAP)}\n\n…[truncated — fetch more via firecrawl_check_crawl_status]`;
       const summary = `Crawl ${id} · status=${last.status} · completed=${last.completed}/${last.total} · credits=${last.creditsUsed}\nStatus URL: ${base}/v2/crawl/${id}`;
       return [{ type: 'text', text: `${summary}\n\n${body}` }];
     },
@@ -261,7 +336,10 @@ export const TOOLS: McpTool[] = [
     handler: async (args, env) => {
       const id = String(args.id ?? '');
       const skip = Number(args.skip ?? 0) || 0;
-      const res = await apiFetch(env, `/v2/crawl/${encodeURIComponent(id)}${skip ? `?skip=${skip}` : ''}`);
+      const res = await apiFetch(
+        env,
+        `/v2/crawl/${encodeURIComponent(id)}${skip ? `?skip=${skip}` : ''}`,
+      );
       if (res.status === 404) return [{ type: 'text', text: `Crawl job not found: ${id}` }];
       const s = (await res.json()) as Record<string, unknown>;
       const data = (s.data as unknown[]) ?? [];
@@ -269,7 +347,14 @@ export const TOOLS: McpTool[] = [
         {
           type: 'text',
           text: JSON.stringify(
-            { status: s.status, completed: s.completed, total: s.total, creditsUsed: s.creditsUsed, next: s.next, pagesInThisPage: data.length },
+            {
+              status: s.status,
+              completed: s.completed,
+              total: s.total,
+              creditsUsed: s.creditsUsed,
+              next: s.next,
+              pagesInThisPage: data.length,
+            },
             null,
             2,
           ),
@@ -282,34 +367,60 @@ export const TOOLS: McpTool[] = [
     name: 'firecrawl_developer_search',
     description: 'Search public repositories, code, issues, PRs and dev docs (GitHub-scoped).',
     profiles: ['search'],
-    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    inputSchema: {
+      type: 'object',
+      properties: { query: { type: 'string' }, k: { type: 'number' } },
+      required: ['query'],
+    },
     handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['developer'], Number(a.k) || 10),
   },
   {
     name: 'firecrawl_gov_search',
     description: 'Search US federal legal + regulatory primary sources (gov domains).',
     profiles: ['search'],
-    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    inputSchema: {
+      type: 'object',
+      properties: { query: { type: 'string' }, k: { type: 'number' } },
+      required: ['query'],
+    },
     handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['gov'], Number(a.k) || 10),
   },
   {
     name: 'firecrawl_research_search_papers',
     description: 'Search scholarly papers (research-paper category; arXiv/PubMed/journals).',
     profiles: ['search'],
-    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    inputSchema: {
+      type: 'object',
+      properties: { query: { type: 'string' }, k: { type: 'number' } },
+      required: ['query'],
+    },
     handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['research'], Number(a.k) || 40),
   },
   {
     name: 'firecrawl_research_inspect_paper',
-    description: 'Canonical metadata for one paper ID (arXiv:…, DOI:…, CorpusId:…) via Semantic Scholar.',
+    description:
+      'Canonical metadata for one paper ID (arXiv:…, DOI:…, CorpusId:…) via Semantic Scholar.',
     profiles: ['search'],
-    inputSchema: { type: 'object', properties: { paperId: { type: 'string' } }, required: ['paperId'] },
+    inputSchema: {
+      type: 'object',
+      properties: { paperId: { type: 'string' } },
+      required: ['paperId'],
+    },
     handler: async (a) => {
       try {
-        const p = await s2Fetch(`${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,year,venue,citationCount,authors.name,url,tldr`);
-        const authors = ((p.authors as Array<{ name?: string }>) ?? []).map((x) => x.name).join(', ');
+        const p = await s2Fetch(
+          `${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,year,venue,citationCount,authors.name,url,tldr`,
+        );
+        const authors = ((p.authors as Array<{ name?: string }>) ?? [])
+          .map((x) => x.name)
+          .join(', ');
         const tldr = (p.tldr as { text?: string } | null)?.text;
-        return [{ type: 'text', text: `${p.title ?? '(untitled)'} (${p.year ?? '?'})\nAuthors: ${authors || '—'}\nVenue: ${p.venue || '—'} · Citations: ${p.citationCount ?? '—'}\n${p.url || ''}${tldr ? `\nTL;DR: ${tldr}` : ''}\n\nAbstract:\n${p.abstract || '(no abstract)'}` }];
+        return [
+          {
+            type: 'text',
+            text: `${p.title ?? '(untitled)'} (${p.year ?? '?'})\nAuthors: ${authors || '—'}\nVenue: ${p.venue || '—'} · Citations: ${p.citationCount ?? '—'}\n${p.url || ''}${tldr ? `\nTL;DR: ${tldr}` : ''}\n\nAbstract:\n${p.abstract || '(no abstract)'}`,
+          },
+        ];
       } catch (e) {
         return [{ type: 'text', text: `Paper lookup failed: ${(e as Error).message}` }];
       }
@@ -321,15 +432,24 @@ export const TOOLS: McpTool[] = [
     profiles: ['search'],
     inputSchema: {
       type: 'object',
-      properties: { seed_ids: { type: 'array', items: { type: 'string' } }, paperId: { type: 'string' }, k: { type: 'number' } },
+      properties: {
+        seed_ids: { type: 'array', items: { type: 'string' } },
+        paperId: { type: 'string' },
+        k: { type: 'number' },
+      },
       required: [],
     },
     handler: async (a) => {
-      const seed = Array.isArray(a.seed_ids) && a.seed_ids.length ? String(a.seed_ids[0]) : String(a.paperId ?? '');
+      const seed =
+        Array.isArray(a.seed_ids) && a.seed_ids.length
+          ? String(a.seed_ids[0])
+          : String(a.paperId ?? '');
       if (!seed) return [{ type: 'text', text: 'Provide a seed paperId or seed_ids.' }];
       const k = Number(a.k) || 10;
       try {
-        const body = await s2Fetch(`https://api.semanticscholar.org/recommendations/v1/papers/forpaper/${encodeURIComponent(seed)}?fields=title,year,authors.name&limit=${k}`);
+        const body = await s2Fetch(
+          `https://api.semanticscholar.org/recommendations/v1/papers/forpaper/${encodeURIComponent(seed)}?fields=title,year,authors.name&limit=${k}`,
+        );
         const papers = (body.recommendedPapers as Array<Record<string, unknown>>) ?? [];
         const text = papers.map((p, i) => `${i + 1}. ${p.title} (${p.year ?? '?'})`).join('\n');
         return [{ type: 'text', text: text || 'No related papers found.' }];
@@ -340,22 +460,41 @@ export const TOOLS: McpTool[] = [
   },
   {
     name: 'firecrawl_research_read_paper',
-    description: 'Read a paper relevant to a question — returns its TL;DR + abstract (full-text passages unavailable via this index).',
+    description:
+      'Read a paper relevant to a question — returns its TL;DR + abstract (full-text passages unavailable via this index).',
     profiles: ['search'],
-    inputSchema: { type: 'object', properties: { paperId: { type: 'string' }, question: { type: 'string' } }, required: ['paperId'] },
+    inputSchema: {
+      type: 'object',
+      properties: { paperId: { type: 'string' }, question: { type: 'string' } },
+      required: ['paperId'],
+    },
     handler: async (a) => {
       try {
-        const p = await s2Fetch(`${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,tldr`);
+        const p = await s2Fetch(
+          `${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,tldr`,
+        );
         const tldr = (p.tldr as { text?: string } | null)?.text;
-        return [{ type: 'text', text: `Re: "${a.question ?? ''}"\n\n${p.title ?? ''}\nTL;DR: ${tldr || '—'}\n\nAbstract:\n${p.abstract || '(no abstract; full-text passage retrieval is not available via this index)'}` }];
+        return [
+          {
+            type: 'text',
+            text: `Re: "${a.question ?? ''}"\n\n${p.title ?? ''}\nTL;DR: ${tldr || '—'}\n\nAbstract:\n${p.abstract || '(no abstract; full-text passage retrieval is not available via this index)'}`,
+          },
+        ];
       } catch (e) {
         return [{ type: 'text', text: `Paper read failed: ${(e as Error).message}` }];
       }
     },
   },
-  mkStub('firecrawl_find_tools', 'Browse the data-provider catalogue (Alexandria-style).', ['search'], {
-    query: { type: 'string' },
-  }, [], 'Provider discovery — Increment 3.'),
+  mkStub(
+    'firecrawl_find_tools',
+    'Browse the data-provider catalogue (Alexandria-style).',
+    ['search'],
+    {
+      query: { type: 'string' },
+    },
+    [],
+    'Provider discovery — Increment 3.',
+  ),
   {
     name: 'firecrawl_agent',
     description:
@@ -363,14 +502,19 @@ export const TOOLS: McpTool[] = [
     profiles: ['full'],
     inputSchema: {
       type: 'object',
-      properties: { prompt: { type: 'string' }, urls: { type: 'array', items: { type: 'string' } }, schema: { type: 'object' } },
+      properties: {
+        prompt: { type: 'string' },
+        urls: { type: 'array', items: { type: 'string' } },
+        schema: { type: 'object' },
+      },
       required: ['prompt'],
     },
     handler: (a, e, auth) => proxyAgent(e, a, auth),
   },
   {
     name: 'firecrawl_monitor_create',
-    description: 'Create a recurring change-detection monitor for a URL (checked on a schedule). Requires an API key.',
+    description:
+      'Create a recurring change-detection monitor for a URL (checked on a schedule). Requires an API key.',
     profiles: ['full'],
     inputSchema: {
       type: 'object',
@@ -391,14 +535,28 @@ export const TOOLS: McpTool[] = [
     description: 'Run a monitor check now and return its change status. Requires an API key.',
     profiles: ['full'],
     inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
-    handler: (a, e, auth) => proxyMonitor(e, 'POST', `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/run`, {}, auth),
+    handler: (a, e, auth) =>
+      proxyMonitor(
+        e,
+        'POST',
+        `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/run`,
+        {},
+        auth,
+      ),
   },
   {
     name: 'firecrawl_monitor_checks',
     description: 'List historical checks for a monitor. Requires an API key.',
     profiles: ['full'],
     inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
-    handler: (a, e, auth) => proxyMonitor(e, 'GET', `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/checks`, null, auth),
+    handler: (a, e, auth) =>
+      proxyMonitor(
+        e,
+        'GET',
+        `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/checks`,
+        null,
+        auth,
+      ),
   },
 ];
 

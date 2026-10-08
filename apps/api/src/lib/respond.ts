@@ -31,7 +31,10 @@ export async function parseBody<T extends z.ZodTypeAny>(
   try {
     raw = await c.req.json();
   } catch {
-    return { ok: false, response: fail(c, 400, 'Invalid JSON in request body', 'BAD_REQUEST_INVALID_JSON') };
+    return {
+      ok: false,
+      response: fail(c, 400, 'Invalid JSON in request body', 'BAD_REQUEST_INVALID_JSON'),
+    };
   }
   const result = schema.safeParse(raw);
   if (!result.success) {
@@ -39,7 +42,13 @@ export async function parseBody<T extends z.ZodTypeAny>(
     const path = first?.path.join('.') || '(root)';
     return {
       ok: false,
-      response: fail(c, 400, `Invalid request: ${path} — ${first?.message ?? 'validation failed'}`, 'BAD_REQUEST', result.error.issues),
+      response: fail(
+        c,
+        400,
+        `Invalid request: ${path} — ${first?.message ?? 'validation failed'}`,
+        'BAD_REQUEST',
+        result.error.issues,
+      ),
     };
   }
   return { ok: true, data: result.data };

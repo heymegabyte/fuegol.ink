@@ -112,7 +112,12 @@ function capField(s?: string): string | undefined {
   return s.length > FIELD_CAP ? `${s.slice(0, FIELD_CAP)}\n\n…[truncated by fuegol crawl]` : s;
 }
 function capDoc(d: Document): Document {
-  return { ...d, markdown: capField(d.markdown), html: capField(d.html), rawHtml: capField(d.rawHtml) };
+  return {
+    ...d,
+    markdown: capField(d.markdown),
+    html: capField(d.html),
+    rawHtml: capField(d.rawHtml),
+  };
 }
 
 export class CrawlCoordinator extends DurableObject<Env> {
@@ -146,7 +151,12 @@ export class CrawlCoordinator extends DurableObject<Env> {
     if (body.sitemap !== 'skip') {
       try {
         const links = await mapSite(
-          { url: base.toString(), limit, sitemap: 'include', includeSubdomains: !!body.allowSubdomains },
+          {
+            url: base.toString(),
+            limit,
+            sitemap: 'include',
+            includeSubdomains: !!body.allowSubdomains,
+          },
           this.eng(),
         );
         for (const l of links) {
@@ -193,7 +203,9 @@ export class CrawlCoordinator extends DurableObject<Env> {
         invalidURLs.push(u);
       }
     }
-    const frontier: FrontierItem[] = valid.slice(0, MAX_PAGES_CAP).map((u) => ({ url: u, depth: 0 }));
+    const frontier: FrontierItem[] = valid
+      .slice(0, MAX_PAGES_CAP)
+      .map((u) => ({ url: u, depth: 0 }));
     const options = {
       ...body,
       maxDiscoveryDepth: 0,

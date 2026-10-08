@@ -11,13 +11,28 @@ const ok = (name, cond, detail = '') => {
   console.log(`  ${cond ? '✅' : '❌'} ${name}${detail ? ` — ${detail}` : ''}`);
 };
 
-const keyRes = await (await fetch(`${API}/v2/keys`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"name":"e2e-cache"}' })).json();
+const keyRes = await (
+  await fetch(`${API}/v2/keys`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{"name":"e2e-cache"}',
+  })
+).json();
 const H = { 'content-type': 'application/json', authorization: `Bearer ${keyRes.apiKey}` };
 const scrape = async (body) => {
   const t0 = performance.now();
-  const res = await fetch(`${API}/v2/scrape`, { method: 'POST', headers: H, body: JSON.stringify(body) });
+  const res = await fetch(`${API}/v2/scrape`, {
+    method: 'POST',
+    headers: H,
+    body: JSON.stringify(body),
+  });
   const json = await res.json();
-  return { ms: Math.round(performance.now() - t0), strategy: res.headers.get('x-fuegol-strategy'), state: json.data?.metadata?.cacheState, json };
+  return {
+    ms: Math.round(performance.now() - t0),
+    strategy: res.headers.get('x-fuegol-strategy'),
+    state: json.data?.metadata?.cacheState,
+    json,
+  };
 };
 const uniq = (n) => `https://example.com/?cb=${Date.now()}-${n}`;
 

@@ -53,8 +53,14 @@ function lineDiff(oldContent: string, newContent: string): string {
   const newLines = newContent.split('\n');
   const oldSet = new Set(oldLines);
   const newSet = new Set(newLines);
-  const removed = oldLines.filter((l) => l.trim() && !newSet.has(l)).slice(0, 80).map((l) => '- ' + l);
-  const added = newLines.filter((l) => l.trim() && !oldSet.has(l)).slice(0, 80).map((l) => '+ ' + l);
+  const removed = oldLines
+    .filter((l) => l.trim() && !newSet.has(l))
+    .slice(0, 80)
+    .map((l) => '- ' + l);
+  const added = newLines
+    .filter((l) => l.trim() && !oldSet.has(l))
+    .slice(0, 80)
+    .map((l) => '+ ' + l);
   return [...removed, ...added].join('\n').slice(0, 8000);
 }
 
@@ -70,7 +76,9 @@ export async function trackChange(
   const capped = content.slice(0, CONTENT_CAP);
   const hash = await sha256hex(content);
   const prev = await db
-    .prepare('SELECT content_hash, content, scraped_at FROM change_tracking WHERE scope = ? AND url = ? AND tag = ?')
+    .prepare(
+      'SELECT content_hash, content, scraped_at FROM change_tracking WHERE scope = ? AND url = ? AND tag = ?',
+    )
     .bind(scope, url, tag)
     .first<{ content_hash: string; content: string | null; scraped_at: string }>();
 

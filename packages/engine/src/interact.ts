@@ -62,7 +62,8 @@ export async function applyActions(
       switch (action.type) {
         case 'wait':
           if (action.selector) await page.waitForSelector(action.selector, { timeout: 20000 });
-          else await new Promise((r) => setTimeout(r, Math.min(action.milliseconds ?? 1000, 30000)));
+          else
+            await new Promise((r) => setTimeout(r, Math.min(action.milliseconds ?? 1000, 30000)));
           break;
         case 'click':
           if (action.all) {
@@ -183,7 +184,9 @@ function attachActions(doc: Document, actionsOut: ActionsOutput): void {
   doc.actions = {
     screenshots: actionsOut.screenshots.length ? actionsOut.screenshots : undefined,
     scrapes: actionsOut.scrapes.length ? actionsOut.scrapes : undefined,
-    javascriptReturns: actionsOut.javascriptReturns.length ? actionsOut.javascriptReturns : undefined,
+    javascriptReturns: actionsOut.javascriptReturns.length
+      ? actionsOut.javascriptReturns
+      : undefined,
     pdfs: actionsOut.pdfs.length ? actionsOut.pdfs : undefined,
   };
 }
@@ -203,14 +206,21 @@ export async function scrapeWithActions(
   try {
     const page = await browser.newPage();
     if (options.mobile) {
-      await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await page.setViewport({
+        width: 390,
+        height: 844,
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 2,
+      });
     }
     const response = await page.goto(target, {
       waitUntil: 'domcontentloaded',
       timeout: options.timeout ?? 30000,
     });
     const statusCode = response?.status() ?? 200;
-    if (options.waitFor) await new Promise((r) => setTimeout(r, Math.min(options.waitFor ?? 0, 30000)));
+    if (options.waitFor)
+      await new Promise((r) => setTimeout(r, Math.min(options.waitFor ?? 0, 30000)));
 
     const actionsOut = await applyActions(page, options.actions ?? [], env);
     const doc = await captureDocument(page, options, formats, env, statusCode);

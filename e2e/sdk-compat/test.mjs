@@ -23,7 +23,11 @@ const app = new Firecrawl({ apiKey, apiUrl: API });
 
 try {
   const d = await app.scrape('https://example.com', { formats: ['markdown'] });
-  ok('SDK.scrape → markdown', typeof d?.markdown === 'string' && /domain/i.test(d.markdown), JSON.stringify(Object.keys(d || {})));
+  ok(
+    'SDK.scrape → markdown',
+    typeof d?.markdown === 'string' && /domain/i.test(d.markdown),
+    JSON.stringify(Object.keys(d || {})),
+  );
 } catch (e) {
   ok('SDK.scrape', false, e.message);
 }
@@ -39,14 +43,22 @@ try {
 try {
   const s = await app.search('cloudflare workers durable objects', { limit: 3 });
   const web = s?.web ?? s?.data?.web ?? (Array.isArray(s) ? s : []);
-  ok('SDK.search → web results', Array.isArray(web) && web.length > 0, JSON.stringify(Object.keys(s || {})));
+  ok(
+    'SDK.search → web results',
+    Array.isArray(web) && web.length > 0,
+    JSON.stringify(Object.keys(s || {})),
+  );
 } catch (e) {
   ok('SDK.search', false, e.message);
 }
 
 try {
   const c = await app.crawl('https://books.toscrape.com', { limit: 3 });
-  ok('SDK.crawl → completed + data', c?.status === 'completed' && Array.isArray(c?.data) && c.data.length > 0, `status=${c?.status} pages=${c?.data?.length}`);
+  ok(
+    'SDK.crawl → completed + data',
+    c?.status === 'completed' && Array.isArray(c?.data) && c.data.length > 0,
+    `status=${c?.status} pages=${c?.data?.length}`,
+  );
 } catch (e) {
   ok('SDK.crawl', false, e.message);
 }
@@ -64,7 +76,9 @@ try {
 }
 
 try {
-  const b = await app.startBatchScrape(['https://example.com', 'https://www.iana.org'], { formats: ['markdown'] });
+  const b = await app.startBatchScrape(['https://example.com', 'https://www.iana.org'], {
+    formats: ['markdown'],
+  });
   ok('SDK.startBatchScrape → id', typeof b?.id === 'string', JSON.stringify(Object.keys(b || {})));
 } catch (e) {
   ok('SDK.startBatchScrape', false, e.message);

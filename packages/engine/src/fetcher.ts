@@ -21,7 +21,10 @@ export const DEFAULT_USER_AGENT = 'fuegolbot/0.1 (+https://fuegol.ink/bot)';
  * target of each `Location` is re-validated against the private-range blocklist —
  * closing the "redirect to 169.254.169.254" and open-redirect SSRF vectors.
  */
-export async function safeFetch(input: string | URL, opts: FetchOptions = {}): Promise<FetchResult> {
+export async function safeFetch(
+  input: string | URL,
+  opts: FetchOptions = {},
+): Promise<FetchResult> {
   let url = assertSafeUrl(input);
   const maxRedirects = opts.maxRedirects ?? 5;
   const timeoutMs = opts.timeoutMs ?? 30000;
@@ -57,7 +60,10 @@ export async function safeFetch(input: string | URL, opts: FetchOptions = {}): P
 }
 
 /** Convenience: fetch text, swallowing errors + non-2xx into `null`. */
-export async function tryFetchText(input: string | URL, opts?: FetchOptions): Promise<string | null> {
+export async function tryFetchText(
+  input: string | URL,
+  opts?: FetchOptions,
+): Promise<string | null> {
   try {
     const { response } = await safeFetch(input, opts);
     if (!response.ok) return null;

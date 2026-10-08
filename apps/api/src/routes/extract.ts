@@ -16,7 +16,12 @@ function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
     const denied = requireAuth(c);
     if (denied) return denied;
   } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-    return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+    return fail(
+      c,
+      429,
+      'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+      'BAD_REQUEST',
+    );
   }
   return null;
 }
@@ -24,7 +29,8 @@ function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
 route.post('/extract', async (c) => {
   const denied = gate(c);
   if (denied) return denied;
-  if (!c.env.EXTRACT) return fail(c, 501, 'Extract requires the EXTRACT Durable Object binding.', 'UNKNOWN_ERROR');
+  if (!c.env.EXTRACT)
+    return fail(c, 501, 'Extract requires the EXTRACT Durable Object binding.', 'UNKNOWN_ERROR');
   const parsed = await parseBody(c, ExtractRequestSchema);
   if (!parsed.ok) return parsed.response;
 

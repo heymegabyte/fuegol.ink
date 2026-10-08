@@ -139,9 +139,7 @@ export async function resolveAndAssertSafe(url: URL): Promise<void> {
     );
     if (!res.ok) return [];
     const body = (await res.json()) as { Answer?: Array<{ type: number; data: string }> };
-    return (body.Answer ?? [])
-      .filter((a) => a.type === (type === 'A' ? 1 : 28))
-      .map((a) => a.data);
+    return (body.Answer ?? []).filter((a) => a.type === (type === 'A' ? 1 : 28)).map((a) => a.data);
   };
 
   const [a, aaaa] = await Promise.all([query('A'), query('AAAA')]);

@@ -46,7 +46,8 @@ describe('htmlToMarkdown', () => {
   });
 
   it('strips <img src="data:…"> from HTML output', () => {
-    const html = '<p>hi</p><img alt="x" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="><img src="https://e.com/ok.png">';
+    const html =
+      '<p>hi</p><img alt="x" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="><img src="https://e.com/ok.png">';
     const out = stripBase64Images(html);
     expect(out).not.toContain('data:image');
     expect(out).toContain('https://e.com/ok.png');

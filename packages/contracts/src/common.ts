@@ -69,9 +69,7 @@ export type ChangeTracking = z.infer<typeof ChangeTrackingSchema>;
 export const ActionsResultSchema = z.object({
   screenshots: z.array(z.string()).optional(),
   scrapes: z.array(z.object({ url: z.string(), html: z.string() })).optional(),
-  javascriptReturns: z
-    .array(z.object({ type: z.string(), value: z.unknown() }))
-    .optional(),
+  javascriptReturns: z.array(z.object({ type: z.string(), value: z.unknown() })).optional(),
   pdfs: z.array(z.string()).optional(),
 });
 

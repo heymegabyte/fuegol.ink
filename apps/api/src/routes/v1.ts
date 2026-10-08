@@ -34,7 +34,12 @@ route.post('/scrape', async (c) => {
     return c.json({ success: true as const, data: document });
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
-    return fail(c, 500, err instanceof Error ? err.message : 'scrape failed', 'SCRAPE_ALL_ENGINES_FAILED');
+    return fail(
+      c,
+      500,
+      err instanceof Error ? err.message : 'scrape failed',
+      'SCRAPE_ALL_ENGINES_FAILED',
+    );
   }
 });
 

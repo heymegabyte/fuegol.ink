@@ -23,14 +23,14 @@ full edge→target→markdown round trip.
 
 ## Scrape — static tier (markdown), representative corpus
 
-| Corpus item | Median latency | Success | Markdown chars | Tier engaged |
-|---|---:|---:|---:|---|
-| static (example.com) | 34 ms | 3/3 | 156 | http |
-| e-commerce (books.toscrape.com) | 105 ms | 3/3 | 7,266 | http |
-| wiki (en.wikipedia.org/wiki/Cloudflare) | 188 ms | 3/3 | 123,116 | http |
-| news (news.ycombinator.com) | 127 ms | 3/3 | 12,542 | browser-escalated¹ |
-| docs (developer.mozilla.org/en-US/) | 58 ms | 3/3 | 311 | http² |
-| blog (css-tricks.com) | 80 ms | 3/3 | 9,556 | http |
+| Corpus item                             | Median latency | Success | Markdown chars | Tier engaged       |
+| --------------------------------------- | -------------: | ------: | -------------: | ------------------ |
+| static (example.com)                    |          34 ms |     3/3 |            156 | http               |
+| e-commerce (books.toscrape.com)         |         105 ms |     3/3 |          7,266 | http               |
+| wiki (en.wikipedia.org/wiki/Cloudflare) |         188 ms |     3/3 |        123,116 | http               |
+| news (news.ycombinator.com)             |         127 ms |     3/3 |         12,542 | browser-escalated¹ |
+| docs (developer.mozilla.org/en-US/)     |          58 ms |     3/3 |            311 | http²              |
+| blog (css-tricks.com)                   |          80 ms |     3/3 |          9,556 | http               |
 
 **Overall (n = 18 requests, 3 per URL): P50 ≈ 100 ms · P95 ≈ 1–2.1 s.**
 
@@ -49,15 +49,15 @@ the page, not a scrape failure — fuegol returns what is actually in the static
 
 ## By tier / adjacent operation
 
-| Operation | Median latency | Success | Result | Tier |
-|---|---:|---:|---|---|
-| scrape — browser, forced (quotes.toscrape.com/js, cache-busted) | ~1.5 s | 3/3 | 1,657 md chars | browser |
-| map (books.toscrape.com) | ~0.2–0.5 s | — | 73 URLs | http |
-| parse — PDF → markdown via `unpdf` (pdfobject sample) | ~0.7 s | — | 2,848 md chars | n/a |
+| Operation                                                       | Median latency | Success | Result         | Tier    |
+| --------------------------------------------------------------- | -------------: | ------: | -------------- | ------- |
+| scrape — browser, forced (quotes.toscrape.com/js, cache-busted) |         ~1.5 s |     3/3 | 1,657 md chars | browser |
+| map (books.toscrape.com)                                        |     ~0.2–0.5 s |       — | 73 URLs        | http    |
+| parse — PDF → markdown via `unpdf` (pdfobject sample)           |         ~0.7 s |       — | 2,848 md chars | n/a     |
 
 - **Browser tier ≈ 1.5 s median** with a fresh render each call (the harness cache-busts the URL per
   run so no warm instance is reused). First-call-after-idle cold starts run higher (~2–3 s); when a
-  warm Browser Rendering instance *is* reused, repeat renders of the same URL have been observed under
+  warm Browser Rendering instance _is_ reused, repeat renders of the same URL have been observed under
   100 ms — a real perf win, but not the number we quote, because it isn't representative of a fresh job.
 - **Map ≈ a few hundred ms** for a sitemap + link-discovery pass returning dozens of URLs.
 - **Parse ≈ 0.7 s** for a small PDF (fetch + `unpdf`/PDF.js text extraction, fully inside the Worker).
@@ -77,7 +77,7 @@ the page, not a scrape failure — fuegol returns what is actually in the static
    (controlled static/JS/paginated/i18n/error pages) for regression-grade coverage numbers is tracked
    in the roadmap and will live alongside these wall-clock figures.
 
-## What we are *not* claiming
+## What we are _not_ claiming
 
 No head-to-head "X× faster than Firecrawl" number. That would require running both products under
 identical conditions and is not something we will assert without that apparatus. What these figures

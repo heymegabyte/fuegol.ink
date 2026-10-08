@@ -34,7 +34,12 @@ function gate(c: Ctx): Response | null {
       const denied = requireAuth(c);
       if (denied) return denied;
     } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-      return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+      return fail(
+        c,
+        429,
+        'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+        'BAD_REQUEST',
+      );
     }
   }
   return null;
@@ -94,7 +99,12 @@ route.post('/browser', async (c) => {
     return okJson(c, id, state);
   } catch (e) {
     if (e instanceof SsrfError) return fail(c, 400, e.message, 'unsafe_domain_blocked');
-    return fail(c, 500, e instanceof Error ? e.message : 'Failed to create session', 'UNKNOWN_ERROR');
+    return fail(
+      c,
+      500,
+      e instanceof Error ? e.message : 'Failed to create session',
+      'UNKNOWN_ERROR',
+    );
   }
 });
 
@@ -104,7 +114,10 @@ route.post('/browser/:id/act', async (c) => {
   if (denied) return denied;
   const parsed = await parseBody(
     c,
-    z.object({ actions: z.array(ActionSchema).min(1).max(50), formats: z.array(z.string()).optional() }),
+    z.object({
+      actions: z.array(ActionSchema).min(1).max(50),
+      formats: z.array(z.string()).optional(),
+    }),
   );
   if (!parsed.ok) return parsed.response;
   const id = c.req.param('id');

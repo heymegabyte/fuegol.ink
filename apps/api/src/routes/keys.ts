@@ -12,7 +12,12 @@ const route = new Hono<{ Bindings: Env; Variables: Vars }>();
  *  (a later increment); self-serve only mints `free`. The key is returned once. */
 route.post('/keys', async (c) => {
   if (!c.env.DB) {
-    return fail(c, 501, 'Key management requires the D1 (DB) binding on this deployment.', 'UNKNOWN_ERROR');
+    return fail(
+      c,
+      501,
+      'Key management requires the D1 (DB) binding on this deployment.',
+      'UNKNOWN_ERROR',
+    );
   }
   const p = c.get('principal');
   if (!p.authed) {

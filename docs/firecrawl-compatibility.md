@@ -6,11 +6,11 @@
 
 ## Pinned upstream sources
 
-| Surface | Repo / source | Revision | Retrieved |
-|---|---|---|---|
-| REST API v2 | `firecrawl/firecrawl` | `f9f2e3dd5406da68b8b92667772802a6cd7927d9` | 2026-10-07 |
-| MCP server | `firecrawl/firecrawl-mcp-server` | `ec0f9de0a3f2bc9c1359868858cecac98ce39f06` (npm `firecrawl-mcp@3.28.2`) | 2026-10-07 |
-| Pricing | `firecrawl.dev/pricing` + `docs.firecrawl.dev/billing` | live | 2026-10-07 |
+| Surface     | Repo / source                                          | Revision                                                                | Retrieved  |
+| ----------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ---------- |
+| REST API v2 | `firecrawl/firecrawl`                                  | `f9f2e3dd5406da68b8b92667772802a6cd7927d9`                              | 2026-10-07 |
+| MCP server  | `firecrawl/firecrawl-mcp-server`                       | `ec0f9de0a3f2bc9c1359868858cecac98ce39f06` (npm `firecrawl-mcp@3.28.2`) | 2026-10-07 |
+| Pricing     | `firecrawl.dev/pricing` + `docs.firecrawl.dev/billing` | live                                                                    | 2026-10-07 |
 
 The v2 REST contract has **no committed OpenAPI** in the repo — it is defined in Zod at
 `apps/api/src/controllers/v2/types.ts`. Where published docs and that source conflict, **the Zod
@@ -27,11 +27,11 @@ const app = new Firecrawl({ apiKey: 'fgl_live_…', apiUrl: 'https://api.fuegol.
 await app.scrape('https://example.com', { formats: ['markdown'] });
 ```
 
-| Official SDK method | Result |
-|---|---|
-| `scrape` · `map` · `search` | ✅ |
-| `crawl` · `startCrawl` · `getCrawlStatus` | ✅ |
-| `startBatchScrape` · `extract` | ✅ |
+| Official SDK method                       | Result |
+| ----------------------------------------- | ------ |
+| `scrape` · `map` · `search`               | ✅     |
+| `crawl` · `startCrawl` · `getCrawlStatus` | ✅     |
+| `startBatchScrape` · `extract`            | ✅     |
 
 **TypeScript: 8/8** (`node e2e/sdk-compat/test.mjs`). **Python** (`firecrawl-py@4.49.3`): **4/4**
 (`e2e/sdk-compat/test.py` — scrape/map/search/crawl). Both official SDKs run unchanged. This is the
@@ -44,32 +44,32 @@ operational definition of drop-in compatibility: change the base URL, use a fueg
 
 Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applicable to self-host.
 
-| Method | Path (prefix `/v2`) | Purpose | Status |
-|---|---|---|---|
-| POST | `/scrape` | Scrape one URL (all formats) | 🟡 static markdown/html/rawHtml/links/summary/metadata + `{type:"json"}` AI extraction + **JS-rendered + screenshot→R2 + changeTracking (new/same/changed + git-diff + AI `json` semantic diff) + `maxAge`/`storeInCache` R2 cache + `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf via `@cloudflare/puppeteer`)** live |
-| GET | `/scrape/:jobId` | Async scrape fetch | ⛔ |
-| POST | `/map` | Enumerate site URLs | ✅ sitemap + link discovery |
-| POST | `/crawl` | Start multi-page crawl (Durable-Object coordinator) | ✅ live |
-| GET | `/crawl/:jobId` | Crawl status + paginated pages | ✅ live |
-| DELETE | `/crawl/:jobId` | Cancel crawl (race-safe) | ✅ live |
-| GET | `/crawl/:jobId/errors` | Crawl errors + robotsBlocked | ✅ live |
-| GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | 🟡 empty (no cross-DO registry yet) |
-| POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
-| POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
-| POST | `/search` | Multi-source search (`sources: web/news/images`) + categories + `tbs` time-filter + optional result-scraping (Exa/Tavily adapter) | ✅ live |
-| POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
-| POST | `/parse` (+ `/parse/formats`) | Document parse — PDF (unpdf) / HTML / text → markdown; multipart or `{url}` | ✅ live |
-| POST | `/browser` | Create a persistent interactive browser session (`@cloudflare/puppeteer`, DO-backed) | ✅ live |
-| POST | `/browser/:id/act` | Drive the live session — actions mutate a persistent tab (state persists across calls) | ✅ live |
-| GET · DELETE | `/browser/:id` | Session state · terminate | ✅ live |
-| POST | `/ai-search/index` | Index url(s)/text into your namespace (Vectorize + Workers AI embeddings) | ✅ live |
-| POST | `/ai-search/query` | Semantic search + grounded RAG answer over your indexed content | ✅ live |
-| GET | `/team/credit-usage` (+ historical) | Credit balance (D1 ledger, live for keyed) | ✅ live |
-| POST | `/keys` (fuegol-native) | Self-serve API-key issuance (free tier) | ✅ live |
-| GET | `/team/token-usage` (+ historical) | Token balance | ⛔ |
-| GET | `/team/queue-status` · `/team/activity` | Queue + activity | ⛔ |
-| GET | `/concurrency-check` | Concurrency | 🟡 |
-| GET | `/keyless/eligibility` | Keyless gate | ⛔ |
+| Method       | Path (prefix `/v2`)                      | Purpose                                                                                                                           | Status                                                                                                                                                                                                                                                                                                                                                    |
+| ------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST         | `/scrape`                                | Scrape one URL (all formats)                                                                                                      | 🟡 static markdown/html/rawHtml/links/summary/metadata + `{type:"json"}` AI extraction + **JS-rendered + screenshot→R2 + changeTracking (new/same/changed + git-diff + AI `json` semantic diff) + `maxAge`/`storeInCache` R2 cache + `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf via `@cloudflare/puppeteer`)** live |
+| GET          | `/scrape/:jobId`                         | Async scrape fetch                                                                                                                | ⛔                                                                                                                                                                                                                                                                                                                                                        |
+| POST         | `/map`                                   | Enumerate site URLs                                                                                                               | ✅ sitemap + link discovery                                                                                                                                                                                                                                                                                                                               |
+| POST         | `/crawl`                                 | Start multi-page crawl (Durable-Object coordinator)                                                                               | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET          | `/crawl/:jobId`                          | Crawl status + paginated pages                                                                                                    | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| DELETE       | `/crawl/:jobId`                          | Cancel crawl (race-safe)                                                                                                          | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET          | `/crawl/:jobId/errors`                   | Crawl errors + robotsBlocked                                                                                                      | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET          | `/crawl/active` · `/crawl/ongoing`       | Active crawls                                                                                                                     | 🟡 empty (no cross-DO registry yet)                                                                                                                                                                                                                                                                                                                       |
+| POST         | `/crawl/params-preview`                  | Prompt→params preview                                                                                                             | ⛔ (Workers AI)                                                                                                                                                                                                                                                                                                                                           |
+| POST         | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO)                                                                                                    | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/search`                                | Multi-source search (`sources: web/news/images`) + categories + `tbs` time-filter + optional result-scraping (Exa/Tavily adapter) | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/extract` · GET `/extract/:jobId`       | Async structured extraction (Workers AI, ExtractCoordinator DO)                                                                   | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/parse` (+ `/parse/formats`)            | Document parse — PDF (unpdf) / HTML / text → markdown; multipart or `{url}`                                                       | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/browser`                               | Create a persistent interactive browser session (`@cloudflare/puppeteer`, DO-backed)                                              | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/browser/:id/act`                       | Drive the live session — actions mutate a persistent tab (state persists across calls)                                            | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET · DELETE | `/browser/:id`                           | Session state · terminate                                                                                                         | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/ai-search/index`                       | Index url(s)/text into your namespace (Vectorize + Workers AI embeddings)                                                         | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/ai-search/query`                       | Semantic search + grounded RAG answer over your indexed content                                                                   | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET          | `/team/credit-usage` (+ historical)      | Credit balance (D1 ledger, live for keyed)                                                                                        | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| POST         | `/keys` (fuegol-native)                  | Self-serve API-key issuance (free tier)                                                                                           | ✅ live                                                                                                                                                                                                                                                                                                                                                   |
+| GET          | `/team/token-usage` (+ historical)       | Token balance                                                                                                                     | ⛔                                                                                                                                                                                                                                                                                                                                                        |
+| GET          | `/team/queue-status` · `/team/activity`  | Queue + activity                                                                                                                  | ⛔                                                                                                                                                                                                                                                                                                                                                        |
+| GET          | `/concurrency-check`                     | Concurrency                                                                                                                       | 🟡                                                                                                                                                                                                                                                                                                                                                        |
+| GET          | `/keyless/eligibility`                   | Keyless gate                                                                                                                      | ⛔                                                                                                                                                                                                                                                                                                                                                        |
 
 Legacy **`/v1/*`** paths are served by compatibility adapters (`/v1/map` string-array response,
 flat `formats`, `v0` unprefixed where trivial). `/agent`, `/monitor*`, and the `/browser`+`/interact`
@@ -100,14 +100,15 @@ Endpoints we will expose: `mcp.fuegol.ink/v2/mcp` (full), `/v2/mcp-search` (the 
 search profile), `/mcp` (documented alias). Keyless profile = 3 tools (`scrape`, `search`, `parse`).
 
 **Live: https://fuegol-mcp.manhattan.workers.dev** (stateless Streamable-HTTP JSON-RPC). `firecrawl_scrape`
-+ `firecrawl_map` are real working tools; the rest are advertised for compatibility and return an
-explicit not-yet error (never fabricated data).
 
-| Profile | Tools | Status |
-|---|---|---|
-| Full (`/v2/mcp`) | scrape✅ map✅ crawl✅ check_crawl_status✅ search✅ developer/gov/research-search✅ **agent✅ monitor_create/list/run/checks✅** (Bearer-key auth-forwarded) **research inspect/related/read✅** (Semantic Scholar graph API, free-tier rate-limited → occasional 429 under load, retried); find_tools (stub) | 🟡 live |
-| Search-only (`/v2/mcp-search`) | `firecrawl_scrape`✅ + `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools` (stubs) | 🟡 live |
-| Keyless | `firecrawl_scrape firecrawl_search firecrawl_parse` | ⛔ (auth layer pending) |
+- `firecrawl_map` are real working tools; the rest are advertised for compatibility and return an
+  explicit not-yet error (never fabricated data).
+
+| Profile                        | Tools                                                                                                                                                                                                                                                                                                          | Status                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| Full (`/v2/mcp`)               | scrape✅ map✅ crawl✅ check_crawl_status✅ search✅ developer/gov/research-search✅ **agent✅ monitor_create/list/run/checks✅** (Bearer-key auth-forwarded) **research inspect/related/read✅** (Semantic Scholar graph API, free-tier rate-limited → occasional 429 under load, retried); find_tools (stub) | 🟡 live                 |
+| Search-only (`/v2/mcp-search`) | `firecrawl_scrape`✅ + `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools` (stubs)                                                       | 🟡 live                 |
+| Keyless                        | `firecrawl_scrape firecrawl_search firecrawl_parse`                                                                                                                                                                                                                                                            | ⛔ (auth layer pending) |
 
 Full 30-tool inventory with input schemas is mirrored in `docs/product-surface-inventory.md`.
 

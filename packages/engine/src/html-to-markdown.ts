@@ -21,9 +21,36 @@ export function stripBase64Images(text: string): string {
 }
 
 const BLOCK_TAGS = new Set([
-  'address', 'article', 'aside', 'blockquote', 'details', 'div', 'dl', 'dd', 'dt',
-  'figure', 'figcaption', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'header', 'hr', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'ul', 'li',
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'details',
+  'div',
+  'dl',
+  'dd',
+  'dt',
+  'figure',
+  'figcaption',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hr',
+  'main',
+  'nav',
+  'ol',
+  'p',
+  'pre',
+  'section',
+  'table',
+  'ul',
+  'li',
 ]);
 
 const NODE_ELEMENT = 1;
@@ -114,7 +141,12 @@ function detectLanguage(el: HTMLElement): string {
   return match ? match[1]! : '';
 }
 
-function renderList(el: HTMLElement, ordered: boolean, ctx: MarkdownContext, depth: number): string {
+function renderList(
+  el: HTMLElement,
+  ordered: boolean,
+  ctx: MarkdownContext,
+  depth: number,
+): string {
   const items = el.childNodes.filter((c) => isElement(c) && tagOf(c) === 'li') as HTMLElement[];
   const indent = '  '.repeat(depth);
   let index = 0;
@@ -144,8 +176,8 @@ function renderTable(el: HTMLElement, ctx: MarkdownContext): string {
   const rows = el.querySelectorAll('tr');
   if (rows.length === 0) return '';
   const toCells = (tr: HTMLElement) =>
-    tr
-      .childNodes.filter((c) => isElement(c) && (tagOf(c) === 'td' || tagOf(c) === 'th'))
+    tr.childNodes
+      .filter((c) => isElement(c) && (tagOf(c) === 'td' || tagOf(c) === 'th'))
       .map((c) => renderInline(c, ctx).replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim());
 
   const header = toCells(rows[0]!);
@@ -187,7 +219,9 @@ function renderChildren(el: HTMLElement, ctx: MarkdownContext): string {
 
 function renderBlock(node: Node, ctx: MarkdownContext): string {
   if (node.nodeType === NODE_TEXT) {
-    return decodeEntities((node as unknown as { rawText: string }).rawText).replace(/\s+/g, ' ').trim();
+    return decodeEntities((node as unknown as { rawText: string }).rawText)
+      .replace(/\s+/g, ' ')
+      .trim();
   }
   if (!isElement(node)) return '';
   const el = node;
@@ -195,13 +229,21 @@ function renderBlock(node: Node, ctx: MarkdownContext): string {
 
   if (/^h[1-6]$/.test(tag)) {
     const level = Number(tag[1]);
-    const text = el.childNodes.map((c) => renderInline(c, ctx)).join('').replace(/\s+/g, ' ').trim();
+    const text = el.childNodes
+      .map((c) => renderInline(c, ctx))
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim();
     return text ? `${'#'.repeat(level)} ${text}` : '';
   }
 
   switch (tag) {
     case 'p':
-      return el.childNodes.map((c) => renderInline(c, ctx)).join('').replace(/[ \t]+/g, ' ').trim();
+      return el.childNodes
+        .map((c) => renderInline(c, ctx))
+        .join('')
+        .replace(/[ \t]+/g, ' ')
+        .trim();
     case 'hr':
       return '---';
     case 'br':

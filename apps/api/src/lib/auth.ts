@@ -28,7 +28,13 @@ export async function principal(c: Context<{ Bindings: Env; Variables: Vars }>, 
     .filter(Boolean);
 
   if (key && accepted.includes(key)) {
-    c.set('principal', { authed: true, key, mode: 'authenticated', plan: 'scale', monthlyCredits: 1_000_000 });
+    c.set('principal', {
+      authed: true,
+      key,
+      mode: 'authenticated',
+      plan: 'scale',
+      monthlyCredits: 1_000_000,
+    });
   } else if (key && c.env.DB) {
     const resolved = await resolveKey(c.env.DB, key);
     if (resolved) {

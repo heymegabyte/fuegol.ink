@@ -29,7 +29,8 @@ function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
 route.post('/agent', async (c) => {
   const denied = gate(c);
   if (denied) return denied;
-  if (!c.env.EXTRACT) return fail(c, 501, 'Agent requires the EXTRACT Durable Object binding.', 'UNKNOWN_ERROR');
+  if (!c.env.EXTRACT)
+    return fail(c, 501, 'Agent requires the EXTRACT Durable Object binding.', 'UNKNOWN_ERROR');
   const parsed = await parseBody(
     c,
     z.object({

@@ -26,7 +26,7 @@ export function chunkText(text: string): string[] {
   const chunks: string[] = [];
   let cur = '';
   for (const p of paras) {
-    if (cur && (cur.length + 2 + p.length) > CHUNK_CHARS) {
+    if (cur && cur.length + 2 + p.length > CHUNK_CHARS) {
       chunks.push(cur);
       cur = p;
     } else {
@@ -87,7 +87,12 @@ export interface SearchMatch {
 }
 
 /** Embed the query + return the tenant's top-K most similar chunks. */
-export async function queryContent(env: Env, tenant: string, query: string, topK: number): Promise<SearchMatch[]> {
+export async function queryContent(
+  env: Env,
+  tenant: string,
+  query: string,
+  topK: number,
+): Promise<SearchMatch[]> {
   const [qv] = await embed(env, [query]);
   if (!qv) return [];
   // Tenant isolation via the `tenant` metadata index. NOTE: a newly-indexed vector is

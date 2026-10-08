@@ -18,13 +18,13 @@ That deploys the Firecrawl-compatible API Worker to your own Cloudflare account.
 tier (scrape + map) works with **zero extra provisioning**. To unlock higher tiers, uncomment the
 bindings in `apps/api/wrangler.jsonc` and provision them:
 
-| Binding | Enables | Provision |
-|---|---|---|
-| `browser` (Browser Rendering) | JS-rendered scrape, screenshots, `{type:"json"}` extraction | Enable Browser Rendering on your account |
-| `ai` (Workers AI) | AI extraction + summaries | none (just bind) |
-| `DB` (D1) | API keys, credit ledger, job metadata | `wrangler d1 create fuegol` |
-| `ARTIFACTS` (R2) | crawl artifacts, screenshots, result bundles | `wrangler r2 bucket create fuegol-artifacts` |
-| `CRAWL_QUEUE` (Queues) | async crawl / batch | `wrangler queues create fuegol-crawl` |
+| Binding                       | Enables                                                     | Provision                                    |
+| ----------------------------- | ----------------------------------------------------------- | -------------------------------------------- |
+| `browser` (Browser Rendering) | JS-rendered scrape, screenshots, `{type:"json"}` extraction | Enable Browser Rendering on your account     |
+| `ai` (Workers AI)             | AI extraction + summaries                                   | none (just bind)                             |
+| `DB` (D1)                     | API keys, credit ledger, job metadata                       | `wrangler d1 create fuegol`                  |
+| `ARTIFACTS` (R2)              | crawl artifacts, screenshots, result bundles                | `wrangler r2 bucket create fuegol-artifacts` |
+| `CRAWL_QUEUE` (Queues)        | async crawl / batch                                         | `wrangler queues create fuegol-crawl`        |
 
 Self-hosted deployments need **no Stripe credentials** and never route through fuegol.ink's
 hosted infrastructure. Your Cloudflare account, your data, your cost.
@@ -35,7 +35,7 @@ hosted infrastructure. Your Cloudflare account, your data, your cost.
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/heymegabyte/fuegol.ink)
 ```
 
-**Honesty note:** Cloudflare's Deploy button requires the target to be a *dependency-isolated* Worker;
+**Honesty note:** Cloudflare's Deploy button requires the target to be a _dependency-isolated_ Worker;
 it does not resolve a pnpm monorepo's `workspace:*` packages at build time (documented limitation).
 A self-contained standalone Worker (with `@fuegol/contracts` + `@fuegol/engine` inlined/vendored) is
 **Increment 7** on the roadmap and will be published here once tested from a clean Cloudflare account.

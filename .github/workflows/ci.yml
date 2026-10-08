@@ -22,6 +22,8 @@ jobs:
       # canvas/workerd aren't needed for typecheck + unit tests). esbuild is rebuilt explicitly
       # because vitest needs its binary.
       - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Format check (prettier)
+        run: pnpm lint
       - name: Typecheck (all packages)
         run: pnpm -r --if-present typecheck
       - name: Unit tests (engine)

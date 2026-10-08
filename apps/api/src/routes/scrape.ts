@@ -17,7 +17,12 @@ route.post('/scrape', async (c) => {
       const denied = requireAuth(c);
       if (denied) return denied;
     } else if (!allowDemo(c.req.header('cf-connecting-ip') ?? 'unknown', Date.now())) {
-      return fail(c, 429, 'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.', 'BAD_REQUEST');
+      return fail(
+        c,
+        429,
+        'Demo rate limit reached (≈20 requests/min). Add a fuegol.ink API key for higher limits.',
+        'BAD_REQUEST',
+      );
     }
   }
 
@@ -32,7 +37,9 @@ route.post('/scrape', async (c) => {
   // changeTracking must run fresh (it diffs against history); actions have side effects.
   const cacheable = Boolean(c.env.ARTIFACTS) && !ct && !hasActions;
   const maxAge = parsed.data.maxAge ?? 0;
-  const key = cacheable ? await cacheKey(parsed.data.url, parsed.data as Record<string, unknown>) : null;
+  const key = cacheable
+    ? await cacheKey(parsed.data.url, parsed.data as Record<string, unknown>)
+    : null;
 
   try {
     // Cache read: serve a fresh-enough stored result (no re-fetch of the target).
@@ -75,7 +82,9 @@ route.post('/scrape', async (c) => {
         cfg.tag || 'default',
         document.markdown,
         modes.includes('git-diff'),
-        modes.includes('json') ? { env: engineEnv(c.env), prompt: cfg.prompt, schema: cfg.schema } : undefined,
+        modes.includes('json')
+          ? { env: engineEnv(c.env), prompt: cfg.prompt, schema: cfg.schema }
+          : undefined,
       );
     }
 

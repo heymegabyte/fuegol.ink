@@ -8,13 +8,13 @@
 Firecrawl's pricing cards show **annual-billed, monthly-equivalent** prices. That is our anchor.
 
 | Firecrawl plan | Monthly credits | Annual-billed (mo-equiv) | Monthly-billed | **fuegol target (≈50%)** |
-|---|---:|---:|---:|---:|
-| Free | 1,000 | $0 | $0 | **$0** (≥1,000 credits) |
-| Hobby | 5,000 | $16 | $19 | **$8/mo** |
-| Standard | 100,000 | $83 | $99 | **$42/mo** |
-| Growth | 500,000 | $333 | $399 | **$167/mo** |
-| Scale | 1,000,000 | $599 | $749 | **$300/mo** |
-| Enterprise | custom | custom | custom | custom |
+| -------------- | --------------: | -----------------------: | -------------: | -----------------------: |
+| Free           |           1,000 |                       $0 |             $0 |  **$0** (≥1,000 credits) |
+| Hobby          |           5,000 |                      $16 |            $19 |                **$8/mo** |
+| Standard       |         100,000 |                      $83 |            $99 |               **$42/mo** |
+| Growth         |         500,000 |                     $333 |           $399 |              **$167/mo** |
+| Scale          |       1,000,000 |                     $599 |           $749 |              **$300/mo** |
+| Enterprise     |          custom |                   custom |         custom |                   custom |
 
 Credit model (Firecrawl, mirrored for compatibility): scrape **1/page**, crawl **1/page**, map **1/call**,
 search **2 / 10 results**, JSON/LLM-extraction **+4/page** (=5), PDF parse **+1/page**, browser interact
@@ -22,16 +22,16 @@ search **2 / 10 results**, JSON/LLM-extraction **+4/page** (=5), PDF parse **+1/
 
 ## fuegol cost drivers (Cloudflare)
 
-| Driver | Cost basis | Notes |
-|---|---|---|
-| Workers requests | $0.30 / million (after 10M free) + $0.02/M CPU-ms | The static scrape/map tier is **almost entirely here** → sub-cent per op. |
-| Browser Rendering | billed browser-seconds (Workers Paid) | Only on JS-escalation; the planner avoids it whenever static suffices. |
-| `/crawl` `render:false` | **free during beta** → Workers pricing after | Our breadth-crawl path; never assume it stays free. |
-| Workers AI | per-neuron / per-token | Only for `{type:"json"}` extraction + summaries; route via AI Gateway for caching. |
-| R2 | $0.015/GB-mo, **$0 egress** | Crawl artifacts, screenshots, result bundles. |
-| D1 | generous free tier, then per-row | Keys, credit ledger, job metadata. |
-| Queues | $0.40 / million operations | Async crawl/batch fan-out. |
-| Stripe | 2.9% + $0.30 (card) / 2.6%+30¢ IBP | Modeled into margin; usage-based overages reconciled off the internal ledger. |
+| Driver                  | Cost basis                                        | Notes                                                                              |
+| ----------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Workers requests        | $0.30 / million (after 10M free) + $0.02/M CPU-ms | The static scrape/map tier is **almost entirely here** → sub-cent per op.          |
+| Browser Rendering       | billed browser-seconds (Workers Paid)             | Only on JS-escalation; the planner avoids it whenever static suffices.             |
+| `/crawl` `render:false` | **free during beta** → Workers pricing after      | Our breadth-crawl path; never assume it stays free.                                |
+| Workers AI              | per-neuron / per-token                            | Only for `{type:"json"}` extraction + summaries; route via AI Gateway for caching. |
+| R2                      | $0.015/GB-mo, **$0 egress**                       | Crawl artifacts, screenshots, result bundles.                                      |
+| D1                      | generous free tier, then per-row                  | Keys, credit ledger, job metadata.                                                 |
+| Queues                  | $0.40 / million operations                        | Async crawl/batch fan-out.                                                         |
+| Stripe                  | 2.9% + $0.30 (card) / 2.6%+30¢ IBP                | Modeled into margin; usage-based overages reconciled off the internal ledger.      |
 
 ## Margin thesis
 

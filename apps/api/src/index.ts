@@ -34,9 +34,18 @@ const sentryOptions = (env: Env) => ({
 
 // Durable Objects run in their own isolates — each must be instrumented + re-exported under
 // the class_name wrangler expects, else errors inside them never reach Sentry.
-export const CrawlCoordinator = Sentry.instrumentDurableObjectWithSentry(sentryOptions, CrawlCoordinatorBase);
-export const ExtractCoordinator = Sentry.instrumentDurableObjectWithSentry(sentryOptions, ExtractCoordinatorBase);
-export const BrowserSession = Sentry.instrumentDurableObjectWithSentry(sentryOptions, BrowserSessionBase);
+export const CrawlCoordinator = Sentry.instrumentDurableObjectWithSentry(
+  sentryOptions,
+  CrawlCoordinatorBase,
+);
+export const ExtractCoordinator = Sentry.instrumentDurableObjectWithSentry(
+  sentryOptions,
+  ExtractCoordinatorBase,
+);
+export const BrowserSession = Sentry.instrumentDurableObjectWithSentry(
+  sentryOptions,
+  BrowserSessionBase,
+);
 
 /** Map a request to its billable operation + credit cost (null = not billed). */
 function usageForRequest(method: string, path: string): { name: string; credits: number } | null {
@@ -68,13 +77,16 @@ function usageForRequest(method: string, path: string): { name: string; credits:
 
 const app = new Hono<{ Bindings: Env; Variables: Vars }>();
 
-app.use('*', cors({
-  origin: '*',
-  allowHeaders: ['authorization', 'content-type'],
-  allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  exposeHeaders: ['x-fuegol-strategy'],
-  maxAge: 86400,
-}));
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowHeaders: ['authorization', 'content-type'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    exposeHeaders: ['x-fuegol-strategy'],
+    maxAge: 86400,
+  }),
+);
 app.use('*', principal);
 
 // Credit enforcement + ledger recording for authenticated (D1-key) principals.
@@ -114,7 +126,8 @@ app.use('/v2/*', async (c, next) => {
 app.get('/', (c) =>
   c.json({
     service: 'fuegol.ink',
-    tagline: 'The web data engine for AI. Firecrawl-compatible. Cloudflare-powered. Half the price.',
+    tagline:
+      'The web data engine for AI. Firecrawl-compatible. Cloudflare-powered. Half the price.',
     version: '0.1.0',
     documentation: 'https://docs.fuegol.ink',
     dashboard: 'https://app.fuegol.ink',
@@ -136,9 +149,14 @@ app.get('/health', (c) => c.json({ status: 'ok', service: 'fuegol-api', version:
 
 // Serve R2 artifacts (screenshots, result bundles) — public, cacheable, read-only.
 app.get('/assets/*', async (c) => {
-  if (!c.env.ARTIFACTS) return c.json({ success: false, error: 'Artifacts not configured', code: 'UNKNOWN_ERROR' }, 404);
+  if (!c.env.ARTIFACTS)
+    return c.json(
+      { success: false, error: 'Artifacts not configured', code: 'UNKNOWN_ERROR' },
+      404,
+    );
   const key = decodeURIComponent(new URL(c.req.url).pathname.replace(/^\/assets\//, ''));
-  if (!key || key.includes('..')) return c.json({ success: false, error: 'Bad asset key', code: 'BAD_REQUEST' }, 400);
+  if (!key || key.includes('..'))
+    return c.json({ success: false, error: 'Bad asset key', code: 'BAD_REQUEST' }, 400);
   const obj = await c.env.ARTIFACTS.get(key);
   if (!obj) return c.json({ success: false, error: 'Asset not found', code: 'BAD_REQUEST' }, 404);
   const headers = new Headers();
@@ -204,7 +222,11 @@ app.onError((err, c) => {
   console.error('Unhandled error:', err);
   Sentry.captureException(err); // Hono catches route throws here, so capture explicitly.
   return c.json(
-    { success: false, error: err instanceof Error ? err.message : 'Internal error', code: 'UNKNOWN_ERROR' },
+    {
+      success: false,
+      error: err instanceof Error ? err.message : 'Internal error',
+      code: 'UNKNOWN_ERROR',
+    },
     500,
   );
 });
@@ -216,7 +238,11 @@ app.get('/debug/sentry', (c) => {
 });
 
 // Cron sweep: run due monitors (recurring scrape + change detection).
-const scheduled = async (_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> => {
+const scheduled = async (
+  _event: ScheduledController,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<void> => {
   ctx.waitUntil(runDueMonitors(env));
 };
 

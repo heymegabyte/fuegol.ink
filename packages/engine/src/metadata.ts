@@ -37,7 +37,9 @@ export function extractMetadata(root: HTMLElement, info: MetadataInput): Documen
     return undefined;
   };
 
-  const title = get(['og:title', 'twitter:title']) ?? (decode(root.querySelector('title')?.text ?? '') || undefined);
+  const title =
+    get(['og:title', 'twitter:title']) ??
+    (decode(root.querySelector('title')?.text ?? '') || undefined);
   const lang = root.querySelector('html')?.getAttribute('lang') ?? undefined;
 
   const faviconHref =

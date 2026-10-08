@@ -5,15 +5,28 @@ import { assertSafeUrl, SsrfError } from '@fuegol/engine';
 import type { Env } from '../env';
 import { fail, parseBody } from '../lib/respond';
 import { requireAuth, type Vars } from '../lib/auth';
-import { createMonitor, listMonitors, getMonitor, deleteMonitor, listChecks, runMonitor } from '../lib/monitor';
+import {
+  createMonitor,
+  listMonitors,
+  getMonitor,
+  deleteMonitor,
+  listChecks,
+  runMonitor,
+} from '../lib/monitor';
 
 const route = new Hono<{ Bindings: Env; Variables: Vars }>();
 
 /** Monitors require an authenticated D1-backed key (they persist + run on cron). */
-function authScope(c: Context<{ Bindings: Env; Variables: Vars }>): { denied?: Response; scope?: string } {
+function authScope(c: Context<{ Bindings: Env; Variables: Vars }>): {
+  denied?: Response;
+  scope?: string;
+} {
   const p = c.get('principal');
   if (!p.authed) return { denied: requireAuth(c)! };
-  if (!p.keyId || !c.env.DB) return { denied: fail(c, 501, 'Monitors require a D1-backed fuegol.ink key.', 'UNKNOWN_ERROR') };
+  if (!p.keyId || !c.env.DB)
+    return {
+      denied: fail(c, 501, 'Monitors require a D1-backed fuegol.ink key.', 'UNKNOWN_ERROR'),
+    };
   return { scope: p.keyId };
 }
 

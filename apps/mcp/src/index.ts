@@ -14,7 +14,11 @@ const sentryOptions = (env: Env) => ({ dsn: env.SENTRY_DSN, tracesSampleRate: 1.
  */
 
 const PROTOCOL_VERSION = '2025-06-18';
-const SERVER_INFO = { name: 'fuegol.ink', title: 'fuegol.ink — web data engine for AI', version: '0.1.0' };
+const SERVER_INFO = {
+  name: 'fuegol.ink',
+  title: 'fuegol.ink — web data engine for AI',
+  version: '0.1.0',
+};
 
 interface JsonRpcRequest {
   jsonrpc: '2.0';
@@ -30,7 +34,12 @@ function rpcError(id: JsonRpcRequest['id'], code: number, message: string) {
   return { jsonrpc: '2.0' as const, id: id ?? null, error: { code, message } };
 }
 
-async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile, auth?: string): Promise<object | null> {
+async function handleOne(
+  req: JsonRpcRequest,
+  env: Env,
+  profile: ToolProfile,
+  auth?: string,
+): Promise<object | null> {
   if (!req || req.jsonrpc !== '2.0' || typeof req.method !== 'string') {
     return rpcError(req?.id ?? null, -32600, 'Invalid Request');
   }
@@ -38,7 +47,9 @@ async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile, au
     case 'initialize':
       return result(req.id, {
         protocolVersion:
-          typeof req.params?.protocolVersion === 'string' ? req.params.protocolVersion : PROTOCOL_VERSION,
+          typeof req.params?.protocolVersion === 'string'
+            ? req.params.protocolVersion
+            : PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
         instructions:
@@ -75,7 +86,12 @@ async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile, au
   }
 }
 
-async function handleMcp(body: unknown, env: Env, profile: ToolProfile, auth?: string): Promise<{ status: number; json?: unknown }> {
+async function handleMcp(
+  body: unknown,
+  env: Env,
+  profile: ToolProfile,
+  auth?: string,
+): Promise<{ status: number; json?: unknown }> {
   const batch = Array.isArray(body) ? (body as JsonRpcRequest[]) : [body as JsonRpcRequest];
   const responses: object[] = [];
   for (const req of batch) {
@@ -87,7 +103,14 @@ async function handleMcp(body: unknown, env: Env, profile: ToolProfile, auth?: s
 }
 
 const app = new Hono<{ Bindings: Env }>();
-app.use('*', cors({ origin: '*', allowHeaders: ['content-type', 'authorization', 'mcp-protocol-version'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowHeaders: ['content-type', 'authorization', 'mcp-protocol-version'],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+  }),
+);
 
 const INFO = {
   service: 'fuegol.ink MCP',
@@ -114,7 +137,13 @@ app.get('/debug/sentry', (c) => {
 });
 
 const mount = (path: string, profile: ToolProfile) => {
-  app.get(path, (c) => c.json({ ...INFO, profile, hint: 'POST JSON-RPC 2.0 here (initialize, tools/list, tools/call).' }));
+  app.get(path, (c) =>
+    c.json({
+      ...INFO,
+      profile,
+      hint: 'POST JSON-RPC 2.0 here (initialize, tools/list, tools/call).',
+    }),
+  );
   app.post(path, async (c) => {
     let body: unknown;
     try {
@@ -122,7 +151,12 @@ const mount = (path: string, profile: ToolProfile) => {
     } catch {
       return c.json(rpcError(null, -32700, 'Parse error'), 400);
     }
-    const { status, json } = await handleMcp(body, c.env, profile, c.req.header('authorization') ?? undefined);
+    const { status, json } = await handleMcp(
+      body,
+      c.env,
+      profile,
+      c.req.header('authorization') ?? undefined,
+    );
     if (status === 202) return c.body(null, 202);
     return c.json(json as object, 200);
   });

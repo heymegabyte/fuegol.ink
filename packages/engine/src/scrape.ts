@@ -110,27 +110,41 @@ async function scrapeInner(request: ScrapeRequest, env: EngineEnv): Promise<Scra
           env,
         );
       } catch (e) {
-        doc.warning = appendWarning(doc.warning, `AI extraction failed: ${e instanceof Error ? e.message : 'error'}`);
+        doc.warning = appendWarning(
+          doc.warning,
+          `AI extraction failed: ${e instanceof Error ? e.message : 'error'}`,
+        );
       }
     } else if (browserAvailable(env)) {
       try {
         const r = await browserQuickAction(env, 'json', {
           url: finalUrl,
           prompt: jsonFmt?.prompt,
-          response_format: jsonFmt?.schema ? { type: 'json_schema', json_schema: jsonFmt.schema } : undefined,
+          response_format: jsonFmt?.schema
+            ? { type: 'json_schema', json_schema: jsonFmt.schema }
+            : undefined,
         });
         if (r.result !== undefined) doc.json = r.result;
       } catch {
-        doc.warning = appendWarning(doc.warning, 'JSON extraction failed; returning content-only result.');
+        doc.warning = appendWarning(
+          doc.warning,
+          'JSON extraction failed; returning content-only result.',
+        );
       }
     } else {
-      doc.warning = appendWarning(doc.warning, 'json format needs the AI (Workers AI) or browser tier — bind AI to enable.');
+      doc.warning = appendWarning(
+        doc.warning,
+        'json format needs the AI (Workers AI) or browser tier — bind AI to enable.',
+      );
     }
   }
 
   const deferred = [...formats].filter((f) => PLANNED_BROWSER_FORMATS.includes(f));
   if (deferred.length) {
-    doc.warning = appendWarning(doc.warning, `formats [${deferred.join(', ')}] are planned, not yet served.`);
+    doc.warning = appendWarning(
+      doc.warning,
+      `formats [${deferred.join(', ')}] are planned, not yet served.`,
+    );
   }
 
   // Near-empty static output (likely a client-rendered SPA) → escalate to the browser

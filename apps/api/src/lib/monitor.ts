@@ -19,7 +19,14 @@ export interface Monitor {
 
 export async function createMonitor(
   db: D1Database,
-  m: { scope: string; url: string; name?: string; tag?: string; webhook?: string; webhookHeaders?: Record<string, string> },
+  m: {
+    scope: string;
+    url: string;
+    name?: string;
+    tag?: string;
+    webhook?: string;
+    webhookHeaders?: Record<string, string>;
+  },
 ): Promise<Monitor> {
   const row: Monitor = {
     id: crypto.randomUUID(),
@@ -61,18 +68,36 @@ export async function listMonitors(db: D1Database, scope: string): Promise<Monit
   return results ?? [];
 }
 
-export async function getMonitor(db: D1Database, id: string, scope: string): Promise<Monitor | null> {
-  return (await db.prepare('SELECT * FROM monitors WHERE id = ? AND scope = ?').bind(id, scope).first<Monitor>()) ?? null;
+export async function getMonitor(
+  db: D1Database,
+  id: string,
+  scope: string,
+): Promise<Monitor | null> {
+  return (
+    (await db
+      .prepare('SELECT * FROM monitors WHERE id = ? AND scope = ?')
+      .bind(id, scope)
+      .first<Monitor>()) ?? null
+  );
 }
 
 export async function deleteMonitor(db: D1Database, id: string, scope: string): Promise<boolean> {
-  const res = await db.prepare('DELETE FROM monitors WHERE id = ? AND scope = ?').bind(id, scope).run();
+  const res = await db
+    .prepare('DELETE FROM monitors WHERE id = ? AND scope = ?')
+    .bind(id, scope)
+    .run();
   return (res.meta.changes ?? 0) > 0;
 }
 
-export async function listChecks(db: D1Database, monitorId: string, limit = 50): Promise<unknown[]> {
+export async function listChecks(
+  db: D1Database,
+  monitorId: string,
+  limit = 50,
+): Promise<unknown[]> {
   const { results } = await db
-    .prepare('SELECT change_status, created_at FROM monitor_checks WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?')
+    .prepare(
+      'SELECT change_status, created_at FROM monitor_checks WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?',
+    )
     .bind(monitorId, Math.min(Math.max(limit, 1), 500))
     .all();
   return results ?? [];
@@ -83,15 +108,31 @@ export async function runMonitor(
   env: Env,
   monitor: Monitor,
 ): Promise<{ changeStatus: string; checkId: string; webhookDelivered?: boolean }> {
-  const { document } = await scrape({ url: monitor.url, formats: ['markdown'] } as never, engineEnv(env));
+  const { document } = await scrape(
+    { url: monitor.url, formats: ['markdown'] } as never,
+    engineEnv(env),
+  );
   const markdown = document.markdown ?? '';
-  const ct = await trackChange(env.DB!, `monitor:${monitor.id}`, monitor.url, monitor.tag, markdown, true);
+  const ct = await trackChange(
+    env.DB!,
+    `monitor:${monitor.id}`,
+    monitor.url,
+    monitor.tag,
+    markdown,
+    true,
+  );
   const checkId = crypto.randomUUID();
   const now = new Date().toISOString();
-  await env.DB!.prepare('INSERT INTO monitor_checks (id, monitor_id, change_status, created_at) VALUES (?, ?, ?, ?)')
+  await env
+    .DB!.prepare(
+      'INSERT INTO monitor_checks (id, monitor_id, change_status, created_at) VALUES (?, ?, ?, ?)',
+    )
     .bind(checkId, monitor.id, ct.changeStatus, now)
     .run();
-  await env.DB!.prepare('UPDATE monitors SET last_check_at = ? WHERE id = ?').bind(now, monitor.id).run();
+  await env
+    .DB!.prepare('UPDATE monitors SET last_check_at = ? WHERE id = ?')
+    .bind(now, monitor.id)
+    .run();
 
   // Alert on change: deliver a signed `monitor.changed` webhook (reuses the crawl/batch HMAC path).
   let webhookDelivered: boolean | undefined;
@@ -114,7 +155,9 @@ export async function runMonitor(
     };
     let headers: Record<string, string> | undefined;
     try {
-      headers = monitor.webhook_headers ? (JSON.parse(monitor.webhook_headers) as Record<string, string>) : undefined;
+      headers = monitor.webhook_headers
+        ? (JSON.parse(monitor.webhook_headers) as Record<string, string>)
+        : undefined;
     } catch {
       headers = undefined;
     }
@@ -131,8 +174,9 @@ export async function runMonitor(
 export async function runDueMonitors(env: Env, limit = 50): Promise<number> {
   if (!env.DB) return 0;
   const cutoff = new Date(Date.now() - 14 * 60 * 1000).toISOString();
-  const { results } = await env.DB
-    .prepare("SELECT * FROM monitors WHERE status = 'active' AND (last_check_at IS NULL OR last_check_at < ?) LIMIT ?")
+  const { results } = await env.DB.prepare(
+    "SELECT * FROM monitors WHERE status = 'active' AND (last_check_at IS NULL OR last_check_at < ?) LIMIT ?",
+  )
     .bind(cutoff, limit)
     .all<Monitor>();
   for (const m of results ?? []) {

@@ -86,7 +86,13 @@ export class BrowserSession extends DurableObject<Env> {
       };
       await this.ctx.storage.put('meta', meta);
       await this.ctx.storage.setAlarm(Date.now() + IDLE_TTL_MS);
-      return { status: 'live', url: meta.lastUrl, title: meta.title, createdAt: meta.createdAt, actCount: 0 };
+      return {
+        status: 'live',
+        url: meta.lastUrl,
+        title: meta.title,
+        createdAt: meta.createdAt,
+        actCount: 0,
+      };
     } finally {
       await browser.disconnect(); // keep the browser + tab alive for subsequent act() calls
     }
@@ -99,7 +105,8 @@ export class BrowserSession extends DurableObject<Env> {
     formats?: string[];
   }): Promise<SessionState> {
     const meta = await this.ctx.storage.get<SessionMeta>('meta');
-    if (!meta) return { status: 'none', error: 'No such session (never created or already closed).' };
+    if (!meta)
+      return { status: 'none', error: 'No such session (never created or already closed).' };
     if (meta.ownerKeyId && input.ownerKeyId !== meta.ownerKeyId) {
       return { status: 'forbidden', error: 'This session belongs to another API key.' };
     }
@@ -109,7 +116,10 @@ export class BrowserSession extends DurableObject<Env> {
       browser = await puppeteer.connect(browserWorker(this.env), meta.cfSessionId);
     } catch {
       await this.ctx.storage.deleteAll();
-      return { status: 'expired', error: 'Session expired (browser keep-alive elapsed). Create a new session.' };
+      return {
+        status: 'expired',
+        error: 'Session expired (browser keep-alive elapsed). Create a new session.',
+      };
     }
 
     try {
@@ -119,7 +129,10 @@ export class BrowserSession extends DurableObject<Env> {
       const formats = new Set(input.formats ?? ['markdown']);
       const document = await captureDocument(page, { onlyMainContent: true }, formats, engine, 200);
       const hasArtifacts =
-        out.screenshots.length || out.scrapes.length || out.javascriptReturns.length || out.pdfs.length;
+        out.screenshots.length ||
+        out.scrapes.length ||
+        out.javascriptReturns.length ||
+        out.pdfs.length;
       if (hasArtifacts) {
         document.actions = {
           screenshots: out.screenshots.length ? out.screenshots : undefined,
@@ -142,7 +155,8 @@ export class BrowserSession extends DurableObject<Env> {
         document,
       };
     } catch (e) {
-      if (e instanceof ActionError) return { status: 'action_error', error: e.message, code: 'SCRAPE_ACTION_ERROR' };
+      if (e instanceof ActionError)
+        return { status: 'action_error', error: e.message, code: 'SCRAPE_ACTION_ERROR' };
       return { status: 'error', error: e instanceof Error ? e.message : 'act failed' };
     } finally {
       await browser.disconnect();

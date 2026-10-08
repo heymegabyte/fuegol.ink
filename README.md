@@ -68,6 +68,7 @@ Real response (trimmed):
   }
 }
 ```
+
 <sub>Verbatim from the live endpoint on 2026-10-07 (example.com was redesigned — it no longer links out).</sub>
 
 Map a site's URLs:
@@ -102,36 +103,36 @@ flowchart LR
 ```
 
 Edge primitives: **Workers + Hono · Browser Rendering · Queues · Workflows · Durable Objects ·
-D1 · R2 · Workers AI · AI Gateway · AI Search**. No portability layer — the CF integration *is* the
+D1 · R2 · Workers AI · AI Gateway · AI Search**. No portability layer — the CF integration _is_ the
 cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architecture-decisions.md).
 
 ## What works today
 
 Every row below is live on the production API and covered by a reproducible prod E2E in [`e2e/`](e2e/).
 
-| Capability | Status |
-|---|---|
-| `POST /v2/scrape` → markdown / html / rawHtml / links / summary / metadata | ✅ live |
-| `POST /v2/scrape` → `{type:"json"}` AI extraction (Workers AI) | ✅ live |
-| `POST /v2/scrape` → JS-rendered (Browser Rendering) + `screenshot` → R2 | ✅ live |
-| `POST /v2/scrape` → `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf) | ✅ live |
-| `POST /v2/scrape` → `changeTracking` (git-diff **+ AI `json` semantic diff**) | ✅ live |
-| `POST /v2/scrape` → `maxAge` result cache (R2, content-addressed) + `storeInCache` | ✅ live |
-| `POST /v2/extract` async structured extraction (Workers AI, Durable Object) | ✅ live |
-| `POST /v2/map` → sitemap + link discovery | ✅ live |
-| `POST /v2/crawl` + `POST /v2/batch/scrape` async (Durable Object) + status/cancel/errors + **signed webhooks** | ✅ live |
-| `POST /v2/search` → multi-source (`web` / `news` / `images`) + categories + `tbs` time-filter + optional result-scraping (Exa/Tavily) | ✅ live |
-| `POST /v2/parse` — PDF (unpdf) + HTML/text → markdown | ✅ live |
-| `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources) | ✅ live |
-| `POST /v2/monitor` (+ run/checks) — recurring change detection on Cron **+ signed `monitor.changed` webhooks** | ✅ live |
-| `POST /v2/browser` + `/browser/:id/act` — **persistent interactive browser sessions** (state persists across requests) | ✅ live |
-| `POST /v2/ai-search/index` + `/query` — **AI Search**: semantic search + RAG over your indexed content (Vectorize + Workers AI, per-key) | ✅ live |
-| API keys (`POST /v2/keys`) + D1 credit ledger, **enforced spend ceilings** (402) + user spend limits | ✅ live |
-| SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, honest error envelopes, `/v1/*` adapters, `/concurrency-check` | ✅ live |
-| Remote **MCP** — scrape/map/crawl/search + developer/gov/research search + agent + monitor_* + research inspect/related/read | ✅ live |
-| Dev **console** `/app/` — keys, live credits, playground (scrape/map/search/crawl) **+ interactive-session playground** | ✅ live |
-| Stripe billing · custom domains · one-click Deploy button | ⛔ roadmap (needs a Stripe test key / the DNS zone) |
-| `find_tools` (Alexandria data-provider catalogue) | ⛔ proprietary upstream |
+| Capability                                                                                                                               | Status                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `POST /v2/scrape` → markdown / html / rawHtml / links / summary / metadata                                                               | ✅ live                                             |
+| `POST /v2/scrape` → `{type:"json"}` AI extraction (Workers AI)                                                                           | ✅ live                                             |
+| `POST /v2/scrape` → JS-rendered (Browser Rendering) + `screenshot` → R2                                                                  | ✅ live                                             |
+| `POST /v2/scrape` → `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf)                                    | ✅ live                                             |
+| `POST /v2/scrape` → `changeTracking` (git-diff **+ AI `json` semantic diff**)                                                            | ✅ live                                             |
+| `POST /v2/scrape` → `maxAge` result cache (R2, content-addressed) + `storeInCache`                                                       | ✅ live                                             |
+| `POST /v2/extract` async structured extraction (Workers AI, Durable Object)                                                              | ✅ live                                             |
+| `POST /v2/map` → sitemap + link discovery                                                                                                | ✅ live                                             |
+| `POST /v2/crawl` + `POST /v2/batch/scrape` async (Durable Object) + status/cancel/errors + **signed webhooks**                           | ✅ live                                             |
+| `POST /v2/search` → multi-source (`web` / `news` / `images`) + categories + `tbs` time-filter + optional result-scraping (Exa/Tavily)    | ✅ live                                             |
+| `POST /v2/parse` — PDF (unpdf) + HTML/text → markdown                                                                                    | ✅ live                                             |
+| `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources)                                                          | ✅ live                                             |
+| `POST /v2/monitor` (+ run/checks) — recurring change detection on Cron **+ signed `monitor.changed` webhooks**                           | ✅ live                                             |
+| `POST /v2/browser` + `/browser/:id/act` — **persistent interactive browser sessions** (state persists across requests)                   | ✅ live                                             |
+| `POST /v2/ai-search/index` + `/query` — **AI Search**: semantic search + RAG over your indexed content (Vectorize + Workers AI, per-key) | ✅ live                                             |
+| API keys (`POST /v2/keys`) + D1 credit ledger, **enforced spend ceilings** (402) + user spend limits                                     | ✅ live                                             |
+| SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, honest error envelopes, `/v1/*` adapters, `/concurrency-check`                     | ✅ live                                             |
+| Remote **MCP** — scrape/map/crawl/search + developer/gov/research search + agent + monitor_* + research inspect/related/read             | ✅ live                                             |
+| Dev **console** `/app/` — keys, live credits, playground (scrape/map/search/crawl) **+ interactive-session playground**                  | ✅ live                                             |
+| Stripe billing · custom domains · one-click Deploy button                                                                                | ⛔ roadmap (needs a Stripe test key / the DNS zone) |
+| `find_tools` (Alexandria data-provider catalogue)                                                                                        | ⛔ proprietary upstream                             |
 
 Full surface map: [`docs/product-surface-inventory.md`](docs/product-surface-inventory.md). Every
 unbuilt endpoint returns an honest `501` with a pointer — never a fake success object. Real
@@ -143,10 +144,10 @@ wall-clock numbers (static scrape P50 ≈ 100 ms, browser tier ≈ 1.5 s) live i
 Pinned to the real upstream source (there is **no committed v2 OpenAPI** — the contract lives in
 Firecrawl's Zod, which we mirror in [`packages/contracts`](packages/contracts)):
 
-| Surface | Pinned revision |
-|---|---|
-| REST API v2 | `firecrawl/firecrawl@f9f2e3d` |
-| MCP server | `firecrawl-mcp-server@ec0f9de` (`firecrawl-mcp@3.28.2`) — **30 tools registered / 28 listed** |
+| Surface     | Pinned revision                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| REST API v2 | `firecrawl/firecrawl@f9f2e3d`                                                                 |
+| MCP server  | `firecrawl-mcp-server@ec0f9de` (`firecrawl-mcp@3.28.2`) — **30 tools registered / 28 listed** |
 
 The MCP server's README says "27 tools"; the source at HEAD registers **30** (28 listable + 2 hidden
 deprecated shims). We pin to the source count. Details: [`docs/firecrawl-compatibility.md`](docs/firecrawl-compatibility.md).
@@ -156,13 +157,13 @@ deprecated shims). We pin to the source count. Details: [`docs/firecrawl-compati
 Targets are **≈50% of Firecrawl's annual-billed, monthly-equivalent** prices (retrieved 2026-10-07).
 Not yet live; billing is Increment 5 and stays in test mode until explicitly approved.
 
-| Tier | Monthly credits | Firecrawl (annual-equiv) | **fuegol target** |
-|---|---:|---:|---:|
-| Free | 1,000 | $0 | **$0** |
-| Hobby | 5,000 | $16 | **$8** |
-| Standard | 100,000 | $83 | **$42** |
-| Growth | 500,000 | $333 | **$167** |
-| Scale | 1,000,000 | $599 | **$300** |
+| Tier     | Monthly credits | Firecrawl (annual-equiv) | **fuegol target** |
+| -------- | --------------: | -----------------------: | ----------------: |
+| Free     |           1,000 |                       $0 |            **$0** |
+| Hobby    |           5,000 |                      $16 |            **$8** |
+| Standard |         100,000 |                      $83 |           **$42** |
+| Growth   |         500,000 |                     $333 |          **$167** |
+| Scale    |       1,000,000 |                     $599 |          **$300** |
 
 Cost model + margin thesis: [`docs/unit-economics.md`](docs/unit-economics.md).
 

@@ -12,7 +12,7 @@
     "SERVICE_ORIGIN": "https://fuegol-api.manhattan.workers.dev",
     "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)",
     "SEARCH_PROVIDER": "exa",
-    "WEBHOOK_SECRET": "whsec_fuegol_demo_override_in_prod"
+    "WEBHOOK_SECRET": "whsec_fuegol_demo_override_in_prod",
   },
 
   "ai": { "binding": "AI" },
@@ -28,22 +28,22 @@
       "binding": "DB",
       "database_name": "fuegol",
       "database_id": "928ae85c-221a-4c65-8bee-5ce4322b308b",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
 
   "durable_objects": {
     "bindings": [
       { "name": "CRAWL", "class_name": "CrawlCoordinator" },
       { "name": "EXTRACT", "class_name": "ExtractCoordinator" },
-      { "name": "BROWSER_SESSION", "class_name": "BrowserSession" }
-    ]
+      { "name": "BROWSER_SESSION", "class_name": "BrowserSession" },
+    ],
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["CrawlCoordinator"] },
     { "tag": "v2", "new_sqlite_classes": ["ExtractCoordinator"] },
-    { "tag": "v3", "new_sqlite_classes": ["BrowserSession"] }
-  ]
+    { "tag": "v3", "new_sqlite_classes": ["BrowserSession"] },
+  ],
 
   // --- Optional bindings (uncomment + provision to enable higher tiers) ---
   //

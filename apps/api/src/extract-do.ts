@@ -1,6 +1,13 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { ExtractRequest } from '@fuegol/contracts';
-import { scrape, assertSafeUrl, extractWithAI, extractAvailable, webSearch, searchAvailable } from '@fuegol/engine';
+import {
+  scrape,
+  assertSafeUrl,
+  extractWithAI,
+  extractAvailable,
+  webSearch,
+  searchAvailable,
+} from '@fuegol/engine';
 import { engineEnv, type Env } from './env';
 
 interface ExtractMeta {
@@ -72,7 +79,9 @@ export class ExtractCoordinator extends DurableObject<Env> {
           urls = (web ?? []).map((r) => r.url).slice(0, MAX_URLS);
         }
         if (urls.length === 0) {
-          throw new Error('Provide urls, or set enableWebSearch with a search provider configured.');
+          throw new Error(
+            'Provide urls, or set enableWebSearch with a search provider configured.',
+          );
         }
       }
       const parts: string[] = [];
@@ -83,7 +92,9 @@ export class ExtractCoordinator extends DurableObject<Env> {
           parts.push(`# Source: ${u}\n\n${document.markdown ?? ''}`);
           sources[u] = [u];
         } catch (e) {
-          parts.push(`# Source: ${u}\n\n[scrape failed: ${e instanceof Error ? e.message : 'error'}]`);
+          parts.push(
+            `# Source: ${u}\n\n[scrape failed: ${e instanceof Error ? e.message : 'error'}]`,
+          );
         }
       }
       const combined = parts.join('\n\n---\n\n').slice(0, MAX_COMBINED);
