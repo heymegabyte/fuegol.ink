@@ -178,6 +178,14 @@ r = requests.post("https://fuegol-api.manhattan.workers.dev/v2/scrape",
 print(r.json()["data"]["markdown"])
 ```
 
+**CLI** (`@fuegol/cli` — zero-dependency)
+
+```sh
+fuegol scrape https://example.com
+fuegol search "durable objects" --category developer
+FUEGOL_API_KEY=fgl_live_… fuegol crawl https://docs.site --limit 20 --wait
+```
+
 **MCP** — live at `https://fuegol-mcp.manhattan.workers.dev` (`firecrawl_scrape` + `firecrawl_map`
 are real tools today; the rest are advertised for compatibility and return an explicit
 not-yet error). Stateless Streamable-HTTP JSON-RPC.

@@ -58,7 +58,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ **Official SDK compatibility verified**: `@mendable/firecrawl-js@4.45.0` runs unchanged against fuegol (apiUrl + fuegol key) — **8/8** (scrape/map/search/crawl/startCrawl/status/batch/extract). Harness `e2e/sdk-compat/`.
 - ⛔ Dependency-isolated standalone Worker for the Deploy-to-Cloudflare button; verify from a clean account
 - ✅ Official **Python SDK** (`firecrawl-py@4.49.3`) compat verified — **4/4** (scrape/map/search/crawl)
-- ⛔ CLI; migration guide; benchmark corpus
+- ✅ **CLI** (`@fuegol/cli`, zero-dependency Node): `scrape`/`map`/`search`/`crawl --wait`/`status`/`extract`/`key` + flags (`--json`, `--category`, `--limit`) — verified against the live API
+- ⛔ migration guide; benchmark corpus; `npx` publish to npm
 - 4 original generated README illustrations; benchmark corpus + published methodology
 
 ## Benchmarks (ongoing, feeds unit-economics.md)
