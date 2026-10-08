@@ -29,6 +29,7 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: per-page/`started` webhook events, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
 
 ## 🟡 Increment 3 — Search, research, monitoring
+- ✅ **Autonomous research agent** (`POST /v2/agent` + `GET /v2/agent/:id`): prompt → web-search → scrape sources → Workers-AI synthesis → schema-conforming answer + `sources`; reuses the EXTRACT DO with search enabled. Verified end-to-end (real summary + useCases + CF-docs sources).
 - ✅ Pluggable web-search provider adapter (**Exa** primary, **Tavily** fallback) behind `SEARCH_PROVIDER`; keys are Worker secrets
 - ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
 - ✅ **Category search via Exa scoping**: `/v2/search` `categories` (developer/github → GitHub, research → research-paper, pdf, gov → gov-domain list) + MCP `firecrawl_developer_search` / `firecrawl_gov_search` / `firecrawl_research_search_papers` now real (verified: NeurIPS/ACM papers, ecfr/congress.gov, github). ⛔ remaining: news/images sources, paper inspect/related/read, find_tools

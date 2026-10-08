@@ -122,7 +122,8 @@ cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architec
 | `POST /v2/search` (Exa/Tavily providers, optional result-scraping) | ✅ live |
 | `POST /v2/parse` — PDF (unpdf) + HTML/text → markdown | ✅ live |
 | `POST /v2/monitor` (+ run / checks) — recurring change detection on Cron | ✅ live |
-| `/agent`, `/interact` (interactive/autonomous families) | ⛔ honest 501 |
+| `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources) | ✅ live |
+| `/interact` (interactive browser sessions) | ⛔ honest 501 |
 | MCP research tools, dashboard, Stripe billing | ⛔ roadmap |
 
 Full surface map: [`docs/product-surface-inventory.md`](docs/product-surface-inventory.md). Every

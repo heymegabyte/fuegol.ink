@@ -26,9 +26,6 @@ function notYet(feature: string, hint: string) {
 
 const ROADMAP = 'See docs/implementation-roadmap.md.';
 
-// Autonomous research agents (FIRE-1 equivalent)
-route.post('/agent', notYet('Autonomous research agent', ROADMAP));
-route.get('/agent/:id', notYet('Agent status', ROADMAP));
 // Interactive browser sessions (interact)
 route.post('/browser', notYet('Interactive browser session', ROADMAP));
 

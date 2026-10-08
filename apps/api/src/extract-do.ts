@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { ExtractRequest } from '@fuegol/contracts';
-import { scrape, assertSafeUrl, extractWithAI, extractAvailable } from '@fuegol/engine';
+import { scrape, assertSafeUrl, extractWithAI, extractAvailable, webSearch, searchAvailable } from '@fuegol/engine';
 import { engineEnv, type Env } from './env';
 
 interface ExtractMeta {
@@ -64,11 +64,16 @@ export class ExtractCoordinator extends DurableObject<Env> {
       if (!extractAvailable(eng)) {
         throw new Error('Workers AI (AI binding) is not configured on this deployment.');
       }
-      const urls = (meta.body.urls ?? []).slice(0, MAX_URLS);
+      let urls = (meta.body.urls ?? []).slice(0, MAX_URLS);
       if (urls.length === 0) {
-        throw new Error(
-          'Provide at least one URL. Prompt-only (web-search) extraction needs the search provider, which is not yet enabled.',
-        );
+        // Agent / web-search mode: discover sources from the prompt.
+        if (meta.body.enableWebSearch && searchAvailable(eng) && meta.body.prompt) {
+          const { web } = await webSearch(meta.body.prompt, { limit: 5 }, eng);
+          urls = web.map((r) => r.url).slice(0, MAX_URLS);
+        }
+        if (urls.length === 0) {
+          throw new Error('Provide urls, or set enableWebSearch with a search provider configured.');
+        }
       }
       const parts: string[] = [];
       const sources: Record<string, string[]> = {};
