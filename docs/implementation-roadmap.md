@@ -63,13 +63,15 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ⛔ Dependency-isolated standalone Worker for the Deploy-to-Cloudflare button; verify from a clean account
 - ✅ Official **Python SDK** (`firecrawl-py@4.49.3`) compat verified — **4/4** (scrape/map/search/crawl)
 - ✅ **CLI** (`@fuegol/cli`, zero-dependency Node): `scrape`/`map`/`search`/`crawl --wait`/`status`/`extract`/`key` + flags (`--json`, `--category`, `--limit`) — verified against the live API
-- ⛔ migration guide; benchmark corpus; `npx` publish to npm
-- 4 original generated README illustrations; benchmark corpus + published methodology
+- ✅ **Published benchmark + reproducible harness** (`e2e/benchmark/run.mjs` → `docs/benchmarks.md`): real live-API measurements — static scrape P50 ≈ 100 ms, browser tier ≈ 1.5 s, map ≈ 0.3 s, PDF parse ≈ 0.7 s; honest caveats (network RTT, target throttling, MDN JS-shell thin-coverage)
+- ⛔ migration guide; `npx` publish to npm
+- ⛔ 4 original generated README illustrations; fixture-based regression corpus (controlled static/JS/paginated/i18n/error pages)
 
 ## Benchmarks (ongoing, feeds unit-economics.md)
-- Corpus: static / JS-heavy / docs / e-commerce / blog / PDF / paginated / i18n / slow / error / auth fixtures
-- Metrics: extraction coverage, markdown quality, P50/P95 latency, real CF cost/op, gross margin, cancel correctness
-- Reproducible compatibility contract tests vs pinned upstream; regression test per fixed defect
+- ✅ **Live wall-clock snapshot published** → `docs/benchmarks.md` (2026-10-08), reproducible via `node e2e/benchmark/run.mjs`. Real corpus (static/e-commerce/wiki/news/docs/blog) + per-tier (browser/map/parse). Honest: network RTT included, target throttling surfaced as proper error envelopes, MDN JS-shell thin-coverage flagged.
+- ⛔ Fixture corpus: controlled static / JS-heavy / docs / e-commerce / blog / PDF / paginated / i18n / slow / error / auth pages (regression-grade, no live-internet variance)
+- ⛔ Metrics still to add: extraction-coverage %, real CF cost/op, gross margin, cancel correctness
+- ⛔ Reproducible compatibility contract tests vs pinned upstream; regression test per fixed defect
 
 ## Convergence
 Not converged — this is Pass 0. Declare convergence only when two consecutive full passes surface no
