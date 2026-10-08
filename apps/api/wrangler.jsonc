@@ -21,6 +21,8 @@
 
   "r2_buckets": [{ "binding": "ARTIFACTS", "bucket_name": "fuegol-artifacts" }],
 
+  "vectorize": [{ "binding": "VECTORIZE", "index_name": "fuegol-rag" }],
+
   "d1_databases": [
     {
       "binding": "DB",

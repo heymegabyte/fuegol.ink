@@ -31,6 +31,8 @@ export interface Env {
   /** R2 — screenshots + result artifacts; served via /assets/*. */
   ARTIFACTS?: R2Bucket;
   ASSET_BASE?: string;
+  /** Vectorize — AI Search (semantic search over indexed content), per-key namespaces. */
+  VECTORIZE?: VectorizeIndex;
   /** Secret used to HMAC-sign outbound crawl/batch webhooks. */
   WEBHOOK_SECRET?: string;
 }

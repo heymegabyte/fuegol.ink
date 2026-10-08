@@ -124,6 +124,7 @@ Every row below is live on the production API and covered by a reproducible prod
 | `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources) | ✅ live |
 | `POST /v2/monitor` (+ run/checks) — recurring change detection on Cron **+ signed `monitor.changed` webhooks** | ✅ live |
 | `POST /v2/browser` + `/browser/:id/act` — **persistent interactive browser sessions** (state persists across requests) | ✅ live |
+| `POST /v2/ai-search/index` + `/query` — **AI Search**: semantic search + RAG over your indexed content (Vectorize + Workers AI, per-key) | ✅ live |
 | API keys (`POST /v2/keys`) + D1 credit ledger, **enforced spend ceilings** (402) + user spend limits | ✅ live |
 | SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, honest error envelopes, `/v1/*` adapters, `/concurrency-check` | ✅ live |
 | Remote **MCP** — scrape/map/crawl/search + developer/gov/research search + agent + monitor_* + research inspect/related/read | ✅ live |

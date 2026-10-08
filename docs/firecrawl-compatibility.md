@@ -62,6 +62,8 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | POST | `/browser` | Create a persistent interactive browser session (`@cloudflare/puppeteer`, DO-backed) | ✅ live |
 | POST | `/browser/:id/act` | Drive the live session — actions mutate a persistent tab (state persists across calls) | ✅ live |
 | GET · DELETE | `/browser/:id` | Session state · terminate | ✅ live |
+| POST | `/ai-search/index` | Index url(s)/text into your namespace (Vectorize + Workers AI embeddings) | ✅ live |
+| POST | `/ai-search/query` | Semantic search + grounded RAG answer over your indexed content | ✅ live |
 | GET | `/team/credit-usage` (+ historical) | Credit balance (D1 ledger, live for keyed) | ✅ live |
 | POST | `/keys` (fuegol-native) | Self-serve API-key issuance (free tier) | ✅ live |
 | GET | `/team/token-usage` (+ historical) | Token balance | ⛔ |
