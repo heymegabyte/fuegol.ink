@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://fuegol-web.manhattan.workers.dev">Website</a> ·
+  <a href="https://fuegol-web.manhattan.workers.dev/app/">Console</a> ·
   <a href="https://fuegol-api.manhattan.workers.dev">Live API</a> ·
   <a href="https://fuegol-mcp.manhattan.workers.dev">MCP</a> ·
   <a href="docs/firecrawl-compatibility.md">Compatibility</a> ·

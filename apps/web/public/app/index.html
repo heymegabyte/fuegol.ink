@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>document.documentElement.className = 'js';</script>
+<title>Console · fuegol.ink</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060610'/%3E%3Cpath d='M18 4C13 11 20 15 13 24c-3 4-9 2-8-5-4 5-2 12 6 12 9 0 12-9 8-16-2-4-1-8-1-11z' fill='%23FF8A3D'/%3E%3Ccircle cx='13' cy='23' r='3.4' fill='%2300E5FF'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#060610;--ink:#eef2f7;--mut:#9aa3b5;--faint:#6b7488;--cyan:#00e5ff;--cyan2:#50aae3;--flame1:#ff5722;--flame2:#ff8a3d;--flame3:#ffc24b;--violet:#7c3aed;--line:rgba(255,255,255,.09);--glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.06);--mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Space Grotesk',system-ui,sans-serif;--sans:system-ui,-apple-system,'Segoe UI',sans-serif}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;background:radial-gradient(50vw 50vw at 90% -10%,rgba(255,87,34,.12),transparent 55%),radial-gradient(55vw 55vw at 5% 0,rgba(0,229,255,.12),transparent 60%)}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px;position:relative;z-index:1}
+  a{color:var(--cyan);text-decoration:none}h1,h2,h3{font-family:var(--disp);letter-spacing:-.02em;margin:0}
+  code,pre,.mono{font-family:var(--mono)}
+  nav{border-bottom:1px solid var(--line);backdrop-filter:blur(12px);background:rgba(6,6,16,.6);position:sticky;top:0;z-index:30}
+  nav .wrap{display:flex;align-items:center;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:700;font-size:18px;color:var(--ink)}
+  .brand svg{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(255,138,61,.6))}
+  .brand .a{background:linear-gradient(90deg,var(--cyan),var(--cyan2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  nav .sp{margin-left:auto}nav a.home{color:var(--mut);font-size:14px}
+  h1.t{font-size:clamp(1.7rem,4vw,2.3rem);margin:34px 0 4px}.sub{color:var(--mut);margin:0 0 26px}
+  .card{background:linear-gradient(180deg,var(--glass2),var(--glass));border:1px solid var(--line);border-radius:15px;padding:22px;margin-bottom:18px}
+  .card h2{font-size:1.15rem;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .card .hint{color:var(--faint);font-size:.86rem;margin:2px 0 16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input,select,textarea{background:#0a0a16;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:11px 13px;font:14px var(--mono)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.14)}
+  input.grow{flex:1;min-width:220px}
+  .btn{border:1px solid transparent;border-radius:10px;padding:11px 16px;font-weight:600;font-size:14px;cursor:pointer;transition:transform .12s,box-shadow .2s}
+  .btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.5;cursor:default;transform:none}
+  .btn-p{background:linear-gradient(100deg,var(--flame1),var(--flame2) 55%,var(--flame3));color:#1a0b02;box-shadow:0 8px 26px -10px rgba(255,120,40,.5)}
+  .btn-g{background:var(--glass);border-color:var(--line);color:var(--ink)}.btn-g:hover{border-color:var(--cyan)}
+  .pill{font:600 11px var(--mono);padding:4px 9px;border-radius:999px;background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.25)}
+  .keybox{font:600 14px var(--mono);background:#0a0a16;border:1px solid var(--line);border-radius:10px;padding:12px 14px;word-break:break-all;color:var(--flame3)}
+  .stat{display:flex;gap:26px;flex-wrap:wrap;margin-top:6px}
+  .stat div b{display:block;font-family:var(--disp);font-size:1.6rem;color:var(--ink)}
+  .stat div span{color:var(--mut);font-size:.82rem}
+  .tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{padding:8px 14px;border-radius:9px;background:var(--glass);border:1px solid var(--line);color:var(--mut);cursor:pointer;font:600 13px var(--mono)}
+  .tab.on{color:var(--ink);border-color:var(--cyan);background:rgba(0,229,255,.08)}
+  pre.out{margin:14px 0 0;background:#0a0a16;border:1px solid var(--line);border-radius:12px;padding:16px;font:12.5px/1.6 var(--mono);color:#cfe8ff;white-space:pre-wrap;max-height:420px;overflow:auto}
+  pre.out .muted{color:var(--faint)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font:600 11px var(--mono);text-transform:uppercase}
+  .getcode{color:var(--cyan);font:600 12px var(--mono);cursor:pointer;margin-top:10px;display:inline-block}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0a0a16;border:1px solid var(--cyan);color:var(--ink);padding:11px 18px;border-radius:10px;font:600 13px var(--mono);opacity:0;transition:opacity .25s;z-index:50;pointer-events:none}
+  .toast.show{opacity:1}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="brand" href="/"><svg viewBox="0 0 32 32"><path d="M18 4C13 11 20 15 13 24c-3 4-9 2-8-5-4 5-2 12 6 12 9 0 12-9 8-16-2-4-1-8-1-11z" fill="#ff8a3d"/><circle cx="13" cy="23" r="3.4" fill="#00e5ff"/></svg> fuegol<span class="a">.ink</span></a>
+  <span class="pill">console</span>
+  <span class="sp"></span>
+  <a class="home" href="/">← home</a>
+</div></nav>
+
+<div class="wrap">
+  <h1 class="t">Developer Console</h1>
+  <p class="sub">Create a key, watch your credits, and run the API — all against the live edge.</p>
+
+  <!-- KEY -->
+  <div class="card" id="keyCard">
+    <h2>🔑 API key</h2>
+    <div class="hint">Keys are shown once. Stored only in this browser (localStorage). Never a Firecrawl fc- key.</div>
+    <div id="noKey">
+      <div class="row">
+        <button class="btn btn-p" id="createKey">Create a free key</button>
+        <span style="color:var(--faint);font-size:13px">or</span>
+        <input class="grow" id="pasteKey" placeholder="paste an existing fgl_live_… key" />
+        <button class="btn btn-g" id="useKey">Use key</button>
+      </div>
+    </div>
+    <div id="hasKey" style="display:none">
+      <div class="keybox" id="keyShow"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn btn-g" id="copyKey">Copy</button>
+        <button class="btn btn-g" id="forgetKey">Forget</button>
+        <span class="pill" id="planPill"></span>
+      </div>
+      <div class="stat" id="credStat" style="margin-top:18px"></div>
+      <div class="row" style="margin-top:16px">
+        <input id="spendLimit" type="number" min="0" placeholder="hard spend limit (credits)" style="width:230px" />
+        <button class="btn btn-g" id="setLimit">Set spend limit</button>
+        <button class="btn btn-g" id="clearLimit">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYGROUND -->
+  <div class="card">
+    <h2>⚡ Playground</h2>
+    <div class="hint">Runs against the live API with your key (or the keyless demo, rate-limited).</div>
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-ep="scrape">scrape</div>
+      <div class="tab" data-ep="map">map</div>
+      <div class="tab" data-ep="search">search</div>
+      <div class="tab" data-ep="crawl">crawl</div>
+    </div>
+    <div class="row">
+      <input class="grow" id="pgInput" value="https://example.com" />
+      <button class="btn btn-p" id="runBtn">Run →</button>
+    </div>
+    <div id="fmtRow" class="row" style="margin-top:10px">
+      <label style="color:var(--mut);font-size:13px"><input type="checkbox" class="fmt" value="markdown" checked> markdown</label>
+      <label style="color:var(--mut);font-size:13px"><input type="checkbox" class="fmt" value="links"> links</label>
+      <label style="color:var(--mut);font-size:13px"><input type="checkbox" class="fmt" value="html"> html</label>
+      <label style="color:var(--mut);font-size:13px"><input type="checkbox" class="fmt" value="screenshot"> screenshot</label>
+    </div>
+    <span class="getcode" id="getCode">⌘ Get code (cURL)</span>
+    <pre class="out" id="pgOut"><span class="muted">Results appear here…</span></pre>
+  </div>
+
+  <!-- USAGE -->
+  <div class="card">
+    <h2>📊 Recent usage</h2>
+    <div class="hint">Your credit ledger (keyed sessions only).</div>
+    <div id="usageWrap"><span style="color:var(--faint);font-size:13px">Add a key to see usage.</span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://fuegol-api.manhattan.workers.dev';
+let key = localStorage.getItem('fuegol_key') || '';
+let ep = 'scrape';
+
+const $ = (id) => document.getElementById(id);
+const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); };
+
+async function api(path, opts = {}) {
+  const headers = { 'content-type': 'application/json', ...(opts.headers || {}) };
+  if (key) headers.authorization = 'Bearer ' + key;
+  const r = await fetch(API + path, { ...opts, headers });
+  let json = null; try { json = await r.json(); } catch {}
+  return { status: r.status, json };
+}
+
+function renderKey() {
+  if (key) {
+    $('noKey').style.display = 'none';
+    $('hasKey').style.display = '';
+    $('keyShow').textContent = key.slice(0, 20) + '…' + key.slice(-6);
+  } else {
+    $('noKey').style.display = '';
+    $('hasKey').style.display = 'none';
+    $('credStat').innerHTML = '';
+    $('usageWrap').innerHTML = '<span style="color:var(--faint);font-size:13px">Add a key to see usage.</span>';
+  }
+}
+
+async function refreshAccount() {
+  if (!key) return;
+  const cu = await api('/v2/team/credit-usage');
+  const d = cu.json && cu.json.data;
+  if (d) {
+    $('credStat').innerHTML =
+      `<div><b>${d.remainingCredits}</b><span>credits remaining</span></div>` +
+      `<div><b>${d.planCredits}</b><span>plan credits</span></div>` +
+      `<div><b>${d.spendLimit ?? '—'}</b><span>spend limit</span></div>`;
+    $('planPill').textContent = (cu.json && cu.json.data && 'plan') ? 'free plan' : '';
+  }
+  const h = await api('/v2/team/credit-usage/historical');
+  const rows = (h.json && h.json.data) || [];
+  if (rows.length) {
+    $('usageWrap').innerHTML =
+      '<table><tr><th>when</th><th>operation</th><th>credits</th></tr>' +
+      rows.slice(0, 15).map((r) => `<tr><td>${new Date(r.createdAt).toLocaleString()}</td><td>${r.operation}</td><td>${r.credits}</td></tr>`).join('') +
+      '</table>';
+  } else {
+    $('usageWrap').innerHTML = '<span style="color:var(--faint);font-size:13px">No usage yet — run something in the playground.</span>';
+  }
+}
+
+function selectedFormats() {
+  return [...document.querySelectorAll('.fmt:checked')].map((c) => c.value);
+}
+
+function buildReq() {
+  const input = $('pgInput').value.trim();
+  if (ep === 'scrape') return { path: '/v2/scrape', body: { url: input, formats: selectedFormats() } };
+  if (ep === 'map') return { path: '/v2/map', body: { url: input, limit: 50 } };
+  if (ep === 'search') return { path: '/v2/search', body: { query: input, limit: 5 } };
+  if (ep === 'crawl') return { path: '/v2/crawl', body: { url: input, limit: 5 } };
+}
+
+async function run() {
+  const { path, body } = buildReq();
+  $('runBtn').disabled = true;
+  $('pgOut').textContent = 'Running ' + ep + ' …';
+  try {
+    const { status, json } = await api(path, { method: 'POST', body: JSON.stringify(body) });
+    if (status === 402) { $('pgOut').innerHTML = '<span class="muted">' + (json.error || 'Insufficient credits') + '</span>'; }
+    else if (status === 429) { $('pgOut').innerHTML = '<span class="muted">Rate limited — add a key for higher limits.</span>'; }
+    else if (ep === 'crawl' && json && json.id) { $('pgOut').textContent = 'Crawl started: ' + json.id + '\nPolling…'; pollCrawl(json.id); }
+    else { $('pgOut').textContent = renderResult(ep, json); }
+  } catch (e) { $('pgOut').innerHTML = '<span class="muted">Error: ' + e.message + '</span>'; }
+  $('runBtn').disabled = false;
+  refreshAccount();
+}
+
+function renderResult(kind, json) {
+  if (!json) return '(no response)';
+  if (kind === 'scrape') {
+    const d = json.data || {};
+    let s = (d.markdown || '').slice(0, 3000);
+    if (d.links) s += '\n\n— links —\n' + d.links.slice(0, 30).join('\n');
+    if (d.screenshot) s += '\n\n— screenshot —\n' + d.screenshot;
+    return s || JSON.stringify(json, null, 2).slice(0, 3000);
+  }
+  if (kind === 'map') return 'Found ' + (json.links || []).length + ' URLs:\n' + (json.links || []).map((l) => l.url).join('\n').slice(0, 3000);
+  if (kind === 'search') { const web = (json.data && json.data.web) || []; return web.map((r, i) => `${i + 1}. ${r.title || ''}\n${r.url}\n${r.description || ''}`).join('\n\n'); }
+  return JSON.stringify(json, null, 2).slice(0, 3000);
+}
+
+async function pollCrawl(id) {
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    const { json } = await api('/v2/crawl/' + id);
+    if (!json) continue;
+    if (json.status !== 'scraping') {
+      const pages = (json.data || []).map((d, i) => `### ${i + 1}. ${(d.metadata && d.metadata.sourceURL) || d.url || ''}\n${(d.markdown || '').slice(0, 400)}`).join('\n\n');
+      $('pgOut').textContent = `Crawl ${json.status} · ${json.completed}/${json.total} pages · ${json.creditsUsed} credits\n\n${pages}`;
+      return;
+    }
+    $('pgOut').textContent = `Crawling… ${json.completed}/${json.total}`;
+  }
+}
+
+function curl() {
+  const { path, body } = buildReq();
+  const auth = key ? ` \\\n  -H 'authorization: Bearer ${key.slice(0, 16)}…'` : '';
+  return `curl -X POST ${API}${path}${auth} \\\n  -H 'content-type: application/json' \\\n  -d '${JSON.stringify(body)}'`;
+}
+
+// wire up
+$('createKey').onclick = async () => {
+  const { json } = await api('/v2/keys', { method: 'POST', body: JSON.stringify({ name: 'console' }) });
+  if (json && json.apiKey) { key = json.apiKey; localStorage.setItem('fuegol_key', key); renderKey(); refreshAccount(); toast('Key created — copy it, it is shown once'); }
+  else toast('Could not create key');
+};
+$('useKey').onclick = () => { const v = $('pasteKey').value.trim(); if (v) { key = v; localStorage.setItem('fuegol_key', key); renderKey(); refreshAccount(); } };
+$('copyKey').onclick = () => { navigator.clipboard.writeText(key); toast('Copied'); };
+$('forgetKey').onclick = () => { key = ''; localStorage.removeItem('fuegol_key'); renderKey(); };
+$('setLimit').onclick = async () => { const v = parseInt($('spendLimit').value, 10); if (!isNaN(v)) { await api('/v2/team/spend-limit', { method: 'POST', body: JSON.stringify({ limit: v }) }); toast('Spend limit set'); refreshAccount(); } };
+$('clearLimit').onclick = async () => { await api('/v2/team/spend-limit', { method: 'POST', body: JSON.stringify({ limit: null }) }); toast('Spend limit cleared'); refreshAccount(); };
+$('runBtn').onclick = run;
+$('getCode').onclick = () => { $('pgOut').textContent = curl(); };
+document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.remove('on'));
+  t.classList.add('on'); ep = t.dataset.ep;
+  $('fmtRow').style.display = ep === 'scrape' ? '' : 'none';
+  $('pgInput').value = ep === 'search' ? 'cloudflare workers' : 'https://example.com';
+});
+$('pgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+
+renderKey();
+if (key) refreshAccount();
+</script>
+</body>
+</html>

@@ -49,7 +49,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 
 ## 🟡 Increment 6 — Website + dashboard
 - ✅ Cinematic marketing site **live at https://fuegol-web.manhattan.workers.dev** (near-black / electric-cyan / amber-flame, fluid type, glass, grain, scroll-reveal, JSON-LD, reduced-motion a11y) with a **real in-browser live-scrape demo** + progressive-enhancement reveals (no-JS safe). Real-browser verified: 0 console errors, demo works, all sections render. Custom domain `fuegol.ink` pending zone.
-- ⛔ `app.fuegol.ink` Angular dashboard: keys, jobs, crawls, usage, invoices, MCP connections, orgs/teams
+- ✅ **Developer console live** at `/app/` on fuegol-web — real key issuance, **live credit balance** (decrements per call), spend-limit set/clear, a working **playground** (scrape/map/search/crawl with results + Get-code), and usage-history table. Real-browser verified: 0 console errors, full create-key→scrape→ledger flow works.
+- ⛔ Richer **Angular dashboard** (`app.fuegol.ink`): jobs/crawl-graph/traces, invoices, MCP connections, orgs/teams (the static console covers the core today)
 - `app.fuegol.ink` Angular dashboard: keys, jobs, crawls, usage, invoices, MCP connections, orgs/teams
 - `docs.fuegol.ink` interactive docs + "Get code" (TS/Python/cURL)
 
