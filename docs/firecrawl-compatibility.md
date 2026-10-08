@@ -34,7 +34,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
 | POST | `/search` | Web search + optional result-scraping (Exa/Tavily adapter) | ✅ live |
 | POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
-| POST | `/parse` (+ formats/upload) | Document parse (PDF/DOCX/…) | ⛔ |
+| POST | `/parse` (+ `/parse/formats`) | Document parse — PDF (unpdf) / HTML / text → markdown; multipart or `{url}` | ✅ live |
 | GET | `/team/credit-usage` (+ historical) | Credit balance | 🟡 ledger-backed |
 | GET | `/team/token-usage` (+ historical) | Token balance | ⛔ |
 | GET | `/team/queue-status` · `/team/activity` | Queue + activity | ⛔ |

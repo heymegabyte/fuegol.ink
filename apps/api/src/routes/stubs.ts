@@ -7,17 +7,17 @@ import type { Vars } from '../lib/auth';
 const route = new Hono<{ Bindings: Env; Variables: Vars }>();
 
 /**
- * Endpoints whose contract is defined (packages/contracts) but whose execution is a
- * later increment. We return an honest 501 with the Firecrawl error envelope and a
- * pointer — never a fake success object. Status in docs/firecrawl-compatibility.md.
- * (Crawl is now real — see routes/crawl.ts.)
+ * Upstream Firecrawl families present in the compatibility inventory but not yet
+ * served. Honest 501 with the Firecrawl error envelope (never 404, never a fake
+ * success). The core data API (scrape/map/crawl/batch/extract/search/parse) is live;
+ * these are the interactive/autonomous families tracked for later increments.
  */
 function notYet(feature: string, hint: string) {
   return (c: Context<{ Bindings: Env; Variables: Vars }>) =>
     c.json(
       {
         success: false as const,
-        error: `${feature} is contract-complete but not yet served on this deployment. ${hint}`,
+        error: `${feature} is not yet served on this deployment. ${hint}`,
         code: 'UNKNOWN_ERROR' as const,
       },
       501 as ContentfulStatusCode,
@@ -26,7 +26,13 @@ function notYet(feature: string, hint: string) {
 
 const ROADMAP = 'See docs/implementation-roadmap.md.';
 
-// Document parse (PDF/DOCX → markdown)
-route.post('/parse', notYet('Document parse', ROADMAP));
+// Autonomous research agents (FIRE-1 equivalent)
+route.post('/agent', notYet('Autonomous research agent', ROADMAP));
+route.get('/agent/:id', notYet('Agent status', ROADMAP));
+// Change tracking + monitors
+route.post('/monitor', notYet('Change monitor', ROADMAP));
+route.get('/monitor', notYet('Monitor list', ROADMAP));
+// Interactive browser sessions (interact)
+route.post('/browser', notYet('Interactive browser session', ROADMAP));
 
 export default route;
