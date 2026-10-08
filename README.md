@@ -208,9 +208,9 @@ const app = new Firecrawl({ apiKey: 'fgl_live_...', apiUrl: 'https://api.fuegol.
 const doc = await app.scrape('https://example.com', { formats: ['markdown'] });
 ```
 
-> **Verified:** `@mendable/firecrawl-js@4.45.0` passes **8/8** against fuegol.ink — `scrape`, `map`,
-> `search`, `crawl`, `startCrawl`, `getCrawlStatus`, `startBatchScrape`, `extract`
-> (reproduce: `node e2e/sdk-compat/test.mjs`).
+> **Verified against both official SDKs:** `@mendable/firecrawl-js@4.45.0` **8/8** and
+> `firecrawl-py@4.49.3` **4/4** run unchanged against fuegol.ink — scrape · map · search · crawl
+> (+ batch/extract/status in TS). Reproduce: `node e2e/sdk-compat/test.mjs` · `python e2e/sdk-compat/test.py`.
 
 Your scrape/map/crawl request bodies and response handling stay the same (within the supported
 surface above). A fuegol key is required — an existing Firecrawl key is never automatically valid.

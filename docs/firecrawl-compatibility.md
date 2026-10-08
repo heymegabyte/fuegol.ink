@@ -33,8 +33,12 @@ await app.scrape('https://example.com', { formats: ['markdown'] });
 | `crawl` · `startCrawl` · `getCrawlStatus` | ✅ |
 | `startBatchScrape` · `extract` | ✅ |
 
-**8/8 passed** via `node e2e/sdk-compat/test.mjs` against the live API. This is the operational
-definition of drop-in compatibility: change the base URL, use a fuegol key, keep your code.
+**TypeScript: 8/8** (`node e2e/sdk-compat/test.mjs`). **Python** (`firecrawl-py@4.49.3`): **4/4**
+(`e2e/sdk-compat/test.py` — scrape/map/search/crawl). Both official SDKs run unchanged. This is the
+operational definition of drop-in compatibility: change the base URL, use a fuegol key, keep your code.
+
+> Note: Cloudflare's edge 403s the bare `Python-urllib` User-Agent (bot protection) — not a fuegol
+> behaviour; the real SDKs set proper User-Agents and are unaffected.
 
 ## REST API coverage
 

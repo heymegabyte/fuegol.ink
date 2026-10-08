@@ -54,7 +54,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 ## 🟡 Increment 7 — One-click deploy + SDKs + growth
 - ✅ **Official SDK compatibility verified**: `@mendable/firecrawl-js@4.45.0` runs unchanged against fuegol (apiUrl + fuegol key) — **8/8** (scrape/map/search/crawl/startCrawl/status/batch/extract). Harness `e2e/sdk-compat/`.
 - ⛔ Dependency-isolated standalone Worker for the Deploy-to-Cloudflare button; verify from a clean account
-- ⛔ Official Python SDK (`firecrawl-py`) compat test; CLI; migration guide
+- ✅ Official **Python SDK** (`firecrawl-py@4.49.3`) compat verified — **4/4** (scrape/map/search/crawl)
+- ⛔ CLI; migration guide; benchmark corpus
 - 4 original generated README illustrations; benchmark corpus + published methodology
 
 ## Benchmarks (ongoing, feeds unit-economics.md)
