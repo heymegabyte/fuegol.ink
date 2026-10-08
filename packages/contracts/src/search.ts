@@ -22,6 +22,8 @@ export const SearchResultSchema = DocumentSchema.partial().extend({
   title: z.string().optional(),
   description: z.string().optional(),
   category: z.string().optional(),
+  /** ISO publish date (news results + Exa dated pages). */
+  date: z.string().optional(),
 });
 export type SearchResult = z.infer<typeof SearchResultSchema>;
 

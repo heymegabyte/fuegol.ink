@@ -118,7 +118,7 @@ Every row below is live on the production API and covered by a reproducible prod
 | `POST /v2/extract` async structured extraction (Workers AI, Durable Object) | ✅ live |
 | `POST /v2/map` → sitemap + link discovery | ✅ live |
 | `POST /v2/crawl` + `POST /v2/batch/scrape` async (Durable Object) + status/cancel/errors + **signed webhooks** | ✅ live |
-| `POST /v2/search` → multi-source (`web` / `news` / `images`) + categories + optional result-scraping (Exa/Tavily) | ✅ live |
+| `POST /v2/search` → multi-source (`web` / `news` / `images`) + categories + `tbs` time-filter + optional result-scraping (Exa/Tavily) | ✅ live |
 | `POST /v2/parse` — PDF (unpdf) + HTML/text → markdown | ✅ live |
 | `POST /v2/agent` — autonomous research (search → scrape → synthesize + sources) | ✅ live |
 | `POST /v2/monitor` (+ run/checks) — recurring change detection on Cron **+ signed `monitor.changed` webhooks** | ✅ live |

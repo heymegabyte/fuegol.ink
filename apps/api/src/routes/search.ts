@@ -54,12 +54,12 @@ route.post('/search', async (c) => {
 
     const { web, news, images, provider } = await webSearch(
       parsed.data.query,
-      { limit: parsed.data.limit, sources: parsed.data.sources, category, includeDomains },
+      { limit: parsed.data.limit, sources: parsed.data.sources, category, includeDomains, tbs: parsed.data.tbs },
       eng,
     );
 
     // Optionally enrich page results (web + news) with a scrape of each, capped per source.
-    const enrich = async (list: Array<{ url: string; title?: string; description?: string }>) => {
+    const enrich = async (list: Array<{ url: string; title?: string; description?: string; date?: string }>) => {
       if (!parsed.data.scrapeOptions) return list;
       const cap = Math.min(list.length, SCRAPE_RESULT_CAP);
       const scraped = await Promise.all(
@@ -70,6 +70,7 @@ route.post('/search', async (c) => {
               url: r.url,
               title: r.title ?? document.title,
               description: r.description,
+              date: r.date,
               markdown: document.markdown,
               links: document.links,
               json: document.json,
