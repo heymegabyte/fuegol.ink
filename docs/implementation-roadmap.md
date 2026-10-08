@@ -25,10 +25,10 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ `POST /v2/batch/scrape` (+ status/cancel/errors) — reuses the crawl DO with a fixed frontier + no discovery; invalid-URL filtering + `ignoreInvalidURLs`; **9/9 E2E green**
 - v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: signed webhooks + retries, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
 
-## ⛔ Increment 3 — Search, research, monitoring
-- Pluggable web-search provider adapter (Brave/Serper/Exa) behind `SEARCH_PROVIDER`
-- `/v2/search` with sources (web/news/images) + categories (github/research/pdf/developer/gov)
-- Developer + gov + scholarly research adapters (authorized indexes only)
+## 🟡 Increment 3 — Search, research, monitoring
+- ✅ Pluggable web-search provider adapter (**Exa** primary, **Tavily** fallback) behind `SEARCH_PROVIDER`; keys are Worker secrets
+- ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
+- ⛔ sources (news/images) + categories (github/research/pdf/developer/gov); developer + gov + scholarly research adapters (authorized indexes only)
 - Tenant Cloudflare AI Search indexing; semantic change monitors on Cron
 
 ## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)

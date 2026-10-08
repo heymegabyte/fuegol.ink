@@ -32,7 +32,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | 🟡 empty (no cross-DO registry yet) |
 | POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
 | POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
-| POST | `/search` | Web/news/image + category search | 🟡 contract; provider adapter ⛔ |
+| POST | `/search` | Web search + optional result-scraping (Exa/Tavily adapter) | ✅ live |
 | POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
 | POST | `/parse` (+ formats/upload) | Document parse (PDF/DOCX/…) | ⛔ |
 | GET | `/team/credit-usage` (+ historical) | Credit balance | 🟡 ledger-backed |
@@ -74,7 +74,7 @@ explicit not-yet error (never fabricated data).
 
 | Profile | Tools | Status |
 |---|---|---|
-| Full (`/v2/mcp`) | scrape✅ map✅ + search/crawl/check_crawl_status (honest stub) | 🟡 live |
+| Full (`/v2/mcp`) | scrape✅ map✅ crawl✅ check_crawl_status✅ search✅; research/gov (honest stub) | 🟡 live |
 | Search-only (`/v2/mcp-search`) | `firecrawl_scrape`✅ + `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools` (stubs) | 🟡 live |
 | Keyless | `firecrawl_scrape firecrawl_search firecrawl_parse` | ⛔ (auth layer pending) |
 

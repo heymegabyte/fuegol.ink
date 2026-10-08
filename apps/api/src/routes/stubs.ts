@@ -26,9 +26,6 @@ function notYet(feature: string, hint: string) {
 
 const ROADMAP = 'See docs/implementation-roadmap.md.';
 
-// Search (needs a pluggable web-search provider key)
-route.post('/search', notYet('Web search', 'Configure a search provider (SEARCH_PROVIDER + API key) to enable. ' + ROADMAP));
-
 // Document parse (PDF/DOCX → markdown)
 route.post('/parse', notYet('Document parse', ROADMAP));
 

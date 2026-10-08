@@ -15,4 +15,5 @@ export { parseHtml, selectContent, extractLinks } from './extract-content';
 export { extractMetadata } from './metadata';
 export { browserAvailable, browserQuickAction } from './browser';
 export { extractWithAI, extractAvailable, type ExtractOptions } from './extract-ai';
+export { webSearch, searchAvailable, searchProviderName, type NormalizedResult } from './search';
 export type { EngineEnv, BrowserQuickAction, WorkersAiBinding } from './types';

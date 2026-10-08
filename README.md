@@ -112,10 +112,11 @@ cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architec
 | `/v1/scrape`, `/v1/map` legacy adapters | ✅ live |
 | SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, error envelopes | ✅ live |
 | `POST /v2/crawl` async job (Durable-Object coordinator) + status/cancel/errors | ✅ live |
-| Remote MCP — `firecrawl_scrape`, `firecrawl_map`, `firecrawl_crawl`, `firecrawl_check_crawl_status` | ✅ live |
+| Remote MCP — `firecrawl_scrape`, `firecrawl_map`, `firecrawl_crawl`, `firecrawl_check_crawl_status`, `firecrawl_search` | ✅ live |
 | `POST /v2/batch/scrape` async job (+ status/cancel/errors) | ✅ live |
-| `POST /v2/search`, `/v2/parse` | ⛔ honest 501 |
-| MCP search/research tools, dashboard, Stripe billing | ⛔ roadmap |
+| `POST /v2/search` (Exa/Tavily providers, optional result-scraping) | ✅ live |
+| `POST /v2/parse` | ⛔ honest 501 |
+| MCP research tools, dashboard, Stripe billing | ⛔ roadmap |
 
 Full surface map: [`docs/product-surface-inventory.md`](docs/product-surface-inventory.md). Every
 unbuilt endpoint returns an honest `501` with a pointer — never a fake success object.

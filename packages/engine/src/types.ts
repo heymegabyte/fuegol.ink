@@ -23,6 +23,10 @@ export interface EngineEnv {
   CF_BROWSER_TOKEN?: string;
   /** Override the crawler User-Agent. */
   USER_AGENT?: string;
+  /** Web-search provider selection + keys (self-host sets its own). */
+  SEARCH_PROVIDER?: string;
+  EXA_API_KEY?: string;
+  TAVILY_API_KEY?: string;
 }
 
 export interface ScrapeContext {

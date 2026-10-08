@@ -104,9 +104,26 @@ export const TOOLS: McpTool[] = [
       },
       required: ['query'],
     },
-    handler: notYet(
-      'firecrawl_search needs a pluggable web-search provider key (SEARCH_PROVIDER) — tracked in docs/implementation-roadmap.md Increment 3. Use firecrawl_scrape/firecrawl_map today.',
-    ),
+    handler: async (args, env) => {
+      const res = await apiFetch(env, '/v2/search', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(args),
+      });
+      const body = (await res.json()) as {
+        success?: boolean;
+        error?: string;
+        data?: { web?: Array<Record<string, unknown>> };
+      };
+      if (!res.ok || body.success === false) {
+        return [{ type: 'text', text: `Search failed: ${body.error ?? res.status}` }];
+      }
+      const web = body.data?.web ?? [];
+      const text = web
+        .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`)
+        .join('\n\n');
+      return [{ type: 'text', text: text || 'No results.' }];
+    },
   },
   {
     name: 'firecrawl_crawl',

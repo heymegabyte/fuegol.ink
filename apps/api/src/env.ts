@@ -15,6 +15,10 @@ export interface Env {
   DEMO_MODE?: string;
   USER_AGENT?: string;
   SERVICE_ORIGIN?: string;
+  /** Web-search provider selection + keys (secrets on hosted; self-host sets its own). */
+  SEARCH_PROVIDER?: string;
+  EXA_API_KEY?: string;
+  TAVILY_API_KEY?: string;
   /** Durable Object namespace backing async crawl + batch jobs. */
   CRAWL?: DurableObjectNamespace<CrawlCoordinator>;
   /** Durable Object namespace backing async extract jobs. */
@@ -29,5 +33,8 @@ export function engineEnv(env: Env): EngineEnv {
     CF_ACCOUNT_ID: env.CF_ACCOUNT_ID,
     CF_BROWSER_TOKEN: env.CF_BROWSER_TOKEN,
     USER_AGENT: env.USER_AGENT,
+    SEARCH_PROVIDER: env.SEARCH_PROVIDER,
+    EXA_API_KEY: env.EXA_API_KEY,
+    TAVILY_API_KEY: env.TAVILY_API_KEY,
   };
 }

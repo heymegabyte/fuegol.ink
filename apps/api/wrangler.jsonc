@@ -8,7 +8,8 @@
   "vars": {
     "DEMO_MODE": "true",
     "SERVICE_ORIGIN": "https://fuegol-api.manhattan.workers.dev",
-    "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)"
+    "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)",
+    "SEARCH_PROVIDER": "exa"
   },
 
   "ai": { "binding": "AI" },
