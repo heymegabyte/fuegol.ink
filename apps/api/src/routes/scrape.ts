@@ -3,6 +3,7 @@ import { ScrapeRequestSchema } from '@fuegol/contracts';
 import { scrape, SsrfError, ActionError } from '@fuegol/engine';
 import { engineEnv, type Env } from '../env';
 import { trackChange } from '../lib/change';
+import { cacheKey, readCache, writeCache } from '../lib/cache';
 import { fail, parseBody } from '../lib/respond';
 import { requireAuth, type Vars } from '../lib/auth';
 import { allowDemo } from '../lib/ratelimit';
@@ -23,15 +24,41 @@ route.post('/scrape', async (c) => {
   const parsed = await parseBody(c, ScrapeRequestSchema);
   if (!parsed.ok) return parsed.response;
 
+  const fmts = parsed.data.formats ?? [];
+  const ct = fmts.find(
+    (f) => f === 'changeTracking' || (typeof f === 'object' && f.type === 'changeTracking'),
+  );
+  const hasActions = Array.isArray(parsed.data.actions) && parsed.data.actions.length > 0;
+  // changeTracking must run fresh (it diffs against history); actions have side effects.
+  const cacheable = Boolean(c.env.ARTIFACTS) && !ct && !hasActions;
+  const maxAge = parsed.data.maxAge ?? 0;
+  const key = cacheable ? await cacheKey(parsed.data.url, parsed.data as Record<string, unknown>) : null;
+
   try {
+    // Cache read: serve a fresh-enough stored result (no re-fetch of the target).
+    if (key && maxAge > 0) {
+      const cached = await readCache(c.env, key, maxAge);
+      if (cached) {
+        c.header('x-fuegol-strategy', 'cache');
+        return c.json({ success: true as const, data: cached });
+      }
+    }
+
     const { document, strategy } = await scrape(parsed.data, engineEnv(c.env));
     c.header('x-fuegol-strategy', strategy);
+    if (key && maxAge > 0) document.metadata = { ...document.metadata, cacheState: 'miss' };
 
-    // changeTracking format: compare against last-seen content for this (scope, url, tag).
-    const fmts = parsed.data.formats ?? [];
-    const ct = fmts.find(
-      (f) => f === 'changeTracking' || (typeof f === 'object' && f.type === 'changeTracking'),
-    );
+    // Populate the cache for future maxAge reads (storeInCache defaults true). Awaited so the
+    // cache is immediately consistent (store-then-read hits); best-effort — a write failure
+    // must never fail the scrape.
+    if (key && parsed.data.storeInCache !== false) {
+      try {
+        await writeCache(c.env, key, document);
+      } catch {
+        /* cache write is best-effort */
+      }
+    }
+
     if (ct && c.env.DB && typeof document.markdown === 'string') {
       const cfg = (typeof ct === 'object' ? ct : {}) as {
         tag?: string | null;

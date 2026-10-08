@@ -115,6 +115,7 @@ Every row below is live on the production API and covered by a reproducible prod
 | `POST /v2/scrape` → JS-rendered (Browser Rendering) + `screenshot` → R2 | ✅ live |
 | `POST /v2/scrape` → `actions` (click/write/press/scroll/wait/screenshot/scrape/executeJavascript/pdf) | ✅ live |
 | `POST /v2/scrape` → `changeTracking` (git-diff **+ AI `json` semantic diff**) | ✅ live |
+| `POST /v2/scrape` → `maxAge` result cache (R2, content-addressed) + `storeInCache` | ✅ live |
 | `POST /v2/extract` async structured extraction (Workers AI, Durable Object) | ✅ live |
 | `POST /v2/map` → sitemap + link discovery | ✅ live |
 | `POST /v2/crawl` + `POST /v2/batch/scrape` async (Durable Object) + status/cancel/errors + **signed webhooks** | ✅ live |
