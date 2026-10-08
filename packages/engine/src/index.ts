@@ -10,7 +10,7 @@ export { discoverSitemapUrls } from './sitemap';
 export { fetchRobots, isAllowed } from './robots';
 export { safeFetch, tryFetchText, DEFAULT_USER_AGENT, type FetchResult, type FetchOptions } from './fetcher';
 export { assertSafeUrl, resolveAndAssertSafe, SsrfError, isPrivateIpv4, isPrivateIpv6, parseIpv4 } from './ssrf';
-export { htmlToMarkdown, type MarkdownContext } from './html-to-markdown';
+export { htmlToMarkdown, stripBase64Images, type MarkdownContext } from './html-to-markdown';
 export { parseHtml, selectContent, extractLinks } from './extract-content';
 export { extractMetadata } from './metadata';
 export { browserAvailable, browserQuickAction } from './browser';

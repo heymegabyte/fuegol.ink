@@ -10,6 +10,16 @@ export interface MarkdownContext {
   baseUrl: string;
 }
 
+/**
+ * Remove inline base64 data-URI images from markdown/HTML. Firecrawl's `removeBase64Images`
+ * defaults to true — these blobs bloat output massively without adding retrievable signal.
+ */
+export function stripBase64Images(text: string): string {
+  return text
+    .replace(/!\[[^\]]*\]\(\s*data:[^)]*\)/gi, '') // markdown image with a data: URI
+    .replace(/<img\b[^>]*\bsrc\s*=\s*["']?\s*data:[^>]*>/gi, ''); // <img src="data:…">
+}
+
 const BLOCK_TAGS = new Set([
   'address', 'article', 'aside', 'blockquote', 'details', 'div', 'dl', 'dd', 'dt',
   'figure', 'figcaption', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',

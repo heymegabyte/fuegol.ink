@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseHtml, selectContent, extractLinks } from '../src/extract-content';
-import { htmlToMarkdown } from '../src/html-to-markdown';
+import { htmlToMarkdown, stripBase64Images } from '../src/html-to-markdown';
 
 describe('htmlToMarkdown', () => {
   it('converts headings, links, lists, code, emphasis', () => {
@@ -31,6 +31,26 @@ describe('htmlToMarkdown', () => {
     expect(md).toContain('| A | B |');
     expect(md).toContain('| --- | --- |');
     expect(md).toContain('| 1 | 2 |');
+  });
+
+  it('strips base64 data-URI images (removeBase64Images) but preserves text + real images', () => {
+    const md =
+      '# Doc\n\n![logo](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==)\n\n' +
+      'Here is real text and a ![real image](https://e.com/a.png).\n\n' +
+      'The scheme literally looks like data:image/png;base64,XYZ when written inline as text.';
+    const out = stripBase64Images(md);
+    expect(out).not.toContain('](data:image'); // the embedded base64 image is gone
+    expect(out).toContain('![real image](https://e.com/a.png)'); // real image preserved
+    expect(out).toContain('data:image/png;base64,XYZ'); // a text mention is NOT clobbered
+    expect(out).toContain('# Doc');
+  });
+
+  it('strips <img src="data:…"> from HTML output', () => {
+    const html = '<p>hi</p><img alt="x" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="><img src="https://e.com/ok.png">';
+    const out = stripBase64Images(html);
+    expect(out).not.toContain('data:image');
+    expect(out).toContain('https://e.com/ok.png');
+    expect(out).toContain('<p>hi</p>');
   });
 
   it('resolves + dedupes absolute links', () => {

@@ -4,7 +4,7 @@ import { safeFetch } from './fetcher';
 import { assertSafeUrl } from './ssrf';
 import { parseHtml, selectContent, extractLinks } from './extract-content';
 import { extractMetadata } from './metadata';
-import { htmlToMarkdown } from './html-to-markdown';
+import { htmlToMarkdown, stripBase64Images } from './html-to-markdown';
 import { browserAvailable, browserQuickAction, browserScreenshot } from './browser';
 import { scrapeWithActions, puppeteerAvailable } from './interact';
 import { extractWithAI, extractAvailable } from './extract-ai';
@@ -18,8 +18,19 @@ export interface ScrapeResult {
 
 const PLANNED_BROWSER_FORMATS = ['changeTracking', 'images', 'audio', 'video', 'product', 'menu'];
 
-/** Scrape a single URL into a Firecrawl-compatible Document via the cheapest adequate tier. */
+/** Scrape a single URL into a Firecrawl-compatible Document via the cheapest adequate tier.
+ *  Post-processes every tier's output uniformly (e.g. removeBase64Images, default true). */
 export async function scrape(request: ScrapeRequest, env: EngineEnv): Promise<ScrapeResult> {
+  const result = await scrapeInner(request, env);
+  if ((request.removeBase64Images ?? true) !== false) {
+    const doc = result.document;
+    if (doc.markdown) doc.markdown = stripBase64Images(doc.markdown);
+    if (doc.html) doc.html = stripBase64Images(doc.html);
+  }
+  return result;
+}
+
+async function scrapeInner(request: ScrapeRequest, env: EngineEnv): Promise<ScrapeResult> {
   const options = ScrapeRequestSchema.parse(request);
   const url = assertSafeUrl(options.url);
   const formats = formatTypes(options.formats);
