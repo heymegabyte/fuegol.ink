@@ -11,5 +11,6 @@ dist/
 coverage/
 test-results/
 playwright-report/
+.playwright-mcp/
 .pnpm-store/
 *.tsbuildinfo

@@ -45,8 +45,9 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ Enforced credit ceilings (reserve-before-work → **402** on insufficient credits) + user-configurable hard spend limit (`POST/GET /v2/team/spend-limit`, migration 0002) — **E2E green**
 - ⛔ Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, per-page crawl reconciliation. **BLOCKED:** only a LIVE Stripe key (`sk_live_`) is available — deferred until a `sk_test_` key is provided; must not risk real charges per the build mandate.
 
-## ⛔ Increment 6 — Website + dashboard
-- `fuegol.ink` cinematic marketing (near-black / electric-cyan / amber-flame) + public demo playground
+## 🟡 Increment 6 — Website + dashboard
+- ✅ Cinematic marketing site **live at https://fuegol-web.manhattan.workers.dev** (near-black / electric-cyan / amber-flame, fluid type, glass, grain, scroll-reveal, JSON-LD, reduced-motion a11y) with a **real in-browser live-scrape demo** + progressive-enhancement reveals (no-JS safe). Real-browser verified: 0 console errors, demo works, all sections render. Custom domain `fuegol.ink` pending zone.
+- ⛔ `app.fuegol.ink` Angular dashboard: keys, jobs, crawls, usage, invoices, MCP connections, orgs/teams
 - `app.fuegol.ink` Angular dashboard: keys, jobs, crawls, usage, invoices, MCP connections, orgs/teams
 - `docs.fuegol.ink` interactive docs + "Get code" (TS/Python/cURL)
 

@@ -77,6 +77,12 @@ importers:
         specifier: ^4
         version: 4.148.0(@cloudflare/workers-types@4.20260702.1)
 
+  apps/web:
+    devDependencies:
+      wrangler:
+        specifier: ^4
+        version: 4.148.0(@cloudflare/workers-types@4.20260702.1)
+
   packages/contracts:
     dependencies:
       zod:
