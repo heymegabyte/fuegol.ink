@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fuegol-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)"
+  }
+  // Optional: bind "browser" (Browser Rendering) + "ai" (Workers AI) to enable
+  // JS-rendered scrape + AI extraction from MCP tools. See apps/api/wrangler.jsonc.
+}

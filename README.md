@@ -112,7 +112,8 @@ cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architec
 | SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, error envelopes | ✅ live |
 | `POST /v2/crawl` (async, Durable-Object coordinator) | ⛔ honest 501 — [next](docs/implementation-roadmap.md) |
 | `POST /v2/search`, `/v2/extract`, `/v2/parse`, batch | ⛔ honest 501 |
-| Remote MCP (`mcp.fuegol.ink`), dashboard, Stripe billing | ⛔ roadmap |
+| Remote MCP — `firecrawl_scrape` + `firecrawl_map` tools (full + search profiles) | ✅ live |
+| MCP crawl/search/research tools, dashboard, Stripe billing | ⛔ roadmap |
 
 Full surface map: [`docs/product-surface-inventory.md`](docs/product-surface-inventory.md). Every
 unbuilt endpoint returns an honest `501` with a pointer — never a fake success object.
@@ -168,11 +169,18 @@ r = requests.post("https://fuegol-api.manhattan.workers.dev/v2/scrape",
 print(r.json()["data"]["markdown"])
 ```
 
-**MCP** (planned — `mcp.fuegol.ink`)
+**MCP** — live at `https://fuegol-mcp.manhattan.workers.dev` (`firecrawl_scrape` + `firecrawl_map`
+are real tools today; the rest are advertised for compatibility and return an explicit
+not-yet error). Stateless Streamable-HTTP JSON-RPC.
 
 ```jsonc
-{ "mcpServers": { "fuegol": { "url": "https://mcp.fuegol.ink/v2/mcp",
-  "headers": { "Authorization": "Bearer fgl_..." } } } }
+{ "mcpServers": { "fuegol": { "url": "https://fuegol-mcp.manhattan.workers.dev/v2/mcp" } } }
+```
+
+```sh
+# verify it live:
+curl -X POST https://fuegol-mcp.manhattan.workers.dev/v2/mcp -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"firecrawl_scrape","arguments":{"url":"https://example.com"}}}'
 ```
 
 ## Migrating from Firecrawl

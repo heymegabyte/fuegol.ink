@@ -68,11 +68,15 @@ Built on **FastMCP** + `@modelcontextprotocol/sdk@^1.29`; we use Cloudflare's st
 Endpoints we will expose: `mcp.fuegol.ink/v2/mcp` (full), `/v2/mcp-search` (the frozen 9-tool
 search profile), `/mcp` (documented alias). Keyless profile = 3 tools (`scrape`, `search`, `parse`).
 
+**Live: https://fuegol-mcp.manhattan.workers.dev** (stateless Streamable-HTTP JSON-RPC). `firecrawl_scrape`
++ `firecrawl_map` are real working tools; the rest are advertised for compatibility and return an
+explicit not-yet error (never fabricated data).
+
 | Profile | Tools | Status |
 |---|---|---|
-| Full (`/v2/mcp`) | 28 listed | ⛔ next increment |
-| Search-only (`/v2/mcp-search`) | `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools firecrawl_scrape` | ⛔ |
-| Keyless | `firecrawl_scrape firecrawl_search firecrawl_parse` | ⛔ |
+| Full (`/v2/mcp`) | scrape✅ map✅ + search/crawl/check_crawl_status (honest stub) | 🟡 live |
+| Search-only (`/v2/mcp-search`) | `firecrawl_scrape`✅ + `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools` (stubs) | 🟡 live |
+| Keyless | `firecrawl_scrape firecrawl_search firecrawl_parse` | ⛔ (auth layer pending) |
 
 Full 30-tool inventory with input schemas is mirrored in `docs/product-surface-inventory.md`.
 

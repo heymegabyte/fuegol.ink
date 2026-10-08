@@ -28,10 +28,14 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - Developer + gov + scholarly research adapters (authorized indexes only)
 - Tenant Cloudflare AI Search indexing; semantic change monitors on Cron
 
-## ⛔ Increment 4 — Remote MCP (mcp.fuegol.ink)
-- Stateless `createMcpHandler`: `/v2/mcp` (full), `/v2/mcp-search` (9-tool profile), `/mcp` alias
-- OAuth discovery + bearer keys + scoped per-tool permissions; keyless 3-tool profile
-- MCP contract tests; tested with Claude Code + Codex
+## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)
+- ✅ Stateless Streamable-HTTP JSON-RPC server **live at https://fuegol-mcp.manhattan.workers.dev**
+- ✅ `/v2/mcp` (full), `/v2/mcp-search` (search profile), `/mcp` alias; profile-scoped tool lists
+- ✅ `firecrawl_scrape` + `firecrawl_map` are real working tools (call the engine); others advertised + honest-error
+- ✅ 17/17 MCP protocol E2E green (initialize, tools/list, tools/call live scrape, SSRF, profile scoping, notifications)
+- ⛔ OAuth discovery + bearer keys + scoped per-tool permissions; keyless 3-tool profile
+- ⛔ Wire remaining tools as their increments land; migrate to Cloudflare `createMcpHandler` once its wiring is verified
+- ⛔ MCP contract tests vs pinned upstream; tested with Claude Code + Codex
 
 ## ⛔ Increment 5 — Billing (Stripe) + credit ledger
 - D1 key store + idempotent transactional credit ledger; reserve-before-work + reconcile

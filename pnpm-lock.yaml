@@ -49,6 +49,34 @@ importers:
         specifier: ^4
         version: 4.148.0(@cloudflare/workers-types@4.20260702.1)
 
+  apps/mcp:
+    dependencies:
+      '@fuegol/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@fuegol/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      hono:
+        specifier: ^4.6.14
+        version: 4.13.13
+      node-html-parser:
+        specifier: ^6.1.13
+        version: 6.1.13
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241127.0
+        version: 4.20260702.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      wrangler:
+        specifier: ^4
+        version: 4.148.0(@cloudflare/workers-types@4.20260702.1)
+
   packages/contracts:
     dependencies:
       zod:
