@@ -14,6 +14,15 @@
 
   "ai": { "binding": "AI" },
 
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fuegol",
+      "database_id": "928ae85c-221a-4c65-8bee-5ce4322b308b",
+      "migrations_dir": "migrations"
+    }
+  ],
+
   "durable_objects": {
     "bindings": [
       { "name": "CRAWL", "class_name": "CrawlCoordinator" },

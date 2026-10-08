@@ -108,7 +108,8 @@ cost and latency advantage. See [`docs/architecture-decisions.md`](docs/architec
 | `POST /v2/scrape` → `{type:"json"}` AI extraction (Workers AI) | ✅ live |
 | `POST /v2/extract` async structured extraction (Workers AI) | ✅ live |
 | `POST /v2/map` → sitemap + link discovery | ✅ live |
-| `GET /v2/team/credit-usage`, `/concurrency-check` | ✅ live (demo balance) |
+| API keys (`POST /v2/keys`) + D1 transactional credit ledger (`/team/credit-usage` + historical) | ✅ live |
+| `/concurrency-check` | ✅ live |
 | `/v1/scrape`, `/v1/map` legacy adapters | ✅ live |
 | SSRF guard (v4/v6/metadata/redirect/DoH), robots.txt, error envelopes | ✅ live |
 | `POST /v2/crawl` async job (Durable-Object coordinator) + status/cancel/errors | ✅ live |

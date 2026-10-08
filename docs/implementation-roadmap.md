@@ -40,10 +40,9 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ⛔ Wire remaining tools as their increments land; migrate to Cloudflare `createMcpHandler` once its wiring is verified
 - ⛔ MCP contract tests vs pinned upstream; tested with Claude Code + Codex
 
-## ⛔ Increment 5 — Billing (Stripe) + credit ledger
-- D1 key store + idempotent transactional credit ledger; reserve-before-work + reconcile
-- Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, hard spend ceilings
-- **Test mode until explicitly approved for live.**
+## 🟡 Increment 5 — Billing (Stripe) + credit ledger
+- ✅ D1 key store (`POST /v2/keys`, SHA-256-hashed, plan→credits) + transactional usage ledger (`usage_events`); live balance + history via `/team/credit-usage[/historical]`; usage middleware records per-op credits (scrape 1 / map 1 / search 2 / extract 5 / parse 1 / crawl+batch 1) — **9/9 E2E green**
+- ⛔ Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, hard spend ceilings, reserve-before-expensive-work + reconcile, per-page crawl reconciliation. **Test mode until explicitly approved for live.**
 
 ## ⛔ Increment 6 — Website + dashboard
 - `fuegol.ink` cinematic marketing (near-black / electric-cyan / amber-flame) + public demo playground

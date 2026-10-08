@@ -23,6 +23,8 @@ export interface Env {
   CRAWL?: DurableObjectNamespace<CrawlCoordinator>;
   /** Durable Object namespace backing async extract jobs. */
   EXTRACT?: DurableObjectNamespace<ExtractCoordinator>;
+  /** D1 — API keys + usage/credit ledger. */
+  DB?: D1Database;
 }
 
 /** Project the Worker Env onto the engine's expected binding surface. */
