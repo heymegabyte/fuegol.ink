@@ -16,6 +16,26 @@ The v2 REST contract has **no committed OpenAPI** in the repo — it is defined 
 `apps/api/src/controllers/v2/types.ts`. Where published docs and that source conflict, **the Zod
 source wins**. Our Zod mirror lives in `packages/contracts` and is the single source of truth here.
 
+## SDK compatibility — verified ✅
+
+The official **Firecrawl v2 TypeScript SDK** (`@mendable/firecrawl-js@4.45.0`) runs **unchanged**
+against fuegol.ink — only `apiUrl` + a fuegol key change. Reproducible harness: `e2e/sdk-compat/`.
+
+```ts
+import { Firecrawl } from '@mendable/firecrawl-js';
+const app = new Firecrawl({ apiKey: 'fgl_live_…', apiUrl: 'https://api.fuegol.ink' });
+await app.scrape('https://example.com', { formats: ['markdown'] });
+```
+
+| Official SDK method | Result |
+|---|---|
+| `scrape` · `map` · `search` | ✅ |
+| `crawl` · `startCrawl` · `getCrawlStatus` | ✅ |
+| `startBatchScrape` · `extract` | ✅ |
+
+**8/8 passed** via `node e2e/sdk-compat/test.mjs` against the live API. This is the operational
+definition of drop-in compatibility: change the base URL, use a fuegol key, keep your code.
+
 ## REST API coverage
 
 Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applicable to self-host.

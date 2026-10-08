@@ -22,6 +22,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-alpha-00E5FF?style=flat-square">
   <img alt="api" src="https://img.shields.io/badge/API-live-2ecc71?style=flat-square">
   <img alt="firecrawl" src="https://img.shields.io/badge/Firecrawl_v2-compatible-FF8A3D?style=flat-square">
+  <img alt="sdk" src="https://img.shields.io/badge/official_SDK-8%2F8_passing-2ecc71?style=flat-square">
   <img alt="cloudflare" src="https://img.shields.io/badge/Cloudflare-native-F38020?style=flat-square">
 </p>
 
@@ -198,6 +199,18 @@ curl -X POST https://fuegol-mcp.manhattan.workers.dev/v2/mcp -H 'content-type: a
 + const base = 'https://api.fuegol.ink';   // or your self-hosted Worker
 + const key  = 'fgl-...';                  // a NEW fuegol key — fc- keys are not accepted
 ```
+
+Or use the **official Firecrawl SDK** unchanged — just point it at fuegol:
+
+```ts
+import { Firecrawl } from '@mendable/firecrawl-js';
+const app = new Firecrawl({ apiKey: 'fgl_live_...', apiUrl: 'https://api.fuegol.ink' });
+const doc = await app.scrape('https://example.com', { formats: ['markdown'] });
+```
+
+> **Verified:** `@mendable/firecrawl-js@4.45.0` passes **8/8** against fuegol.ink — `scrape`, `map`,
+> `search`, `crawl`, `startCrawl`, `getCrawlStatus`, `startBatchScrape`, `extract`
+> (reproduce: `node e2e/sdk-compat/test.mjs`).
 
 Your scrape/map/crawl request bodies and response handling stay the same (within the supported
 surface above). A fuegol key is required — an existing Firecrawl key is never automatically valid.
