@@ -56,7 +56,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | 🟡 empty (no cross-DO registry yet) |
 | POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
 | POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
-| POST | `/search` | Web search + optional result-scraping (Exa/Tavily adapter) | ✅ live |
+| POST | `/search` | Multi-source search (`sources: web/news/images`) + categories + optional result-scraping (Exa/Tavily adapter) | ✅ live |
 | POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
 | POST | `/parse` (+ `/parse/formats`) | Document parse — PDF (unpdf) / HTML / text → markdown; multipart or `{url}` | ✅ live |
 | POST | `/browser` | Create a persistent interactive browser session (`@cloudflare/puppeteer`, DO-backed) | ✅ live |

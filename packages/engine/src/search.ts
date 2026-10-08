@@ -21,6 +21,21 @@ export interface NormalizedResult {
   description?: string;
 }
 
+export interface ImageResult {
+  url: string;
+  title?: string;
+  imageUrl?: string;
+  position?: number;
+}
+
+/** Multi-source search result. Each source is populated only when requested in `sources`. */
+export interface SearchSources {
+  web?: NormalizedResult[];
+  news?: NormalizedResult[];
+  images?: ImageResult[];
+  provider: string;
+}
+
 export function searchAvailable(env: EngineEnv): boolean {
   return Boolean(env.EXA_API_KEY || env.TAVILY_API_KEY);
 }
@@ -38,15 +53,32 @@ export async function webSearch(
   query: string,
   opts: WebSearchOptions,
   env: EngineEnv,
-): Promise<{ web: NormalizedResult[]; provider: string }> {
+): Promise<SearchSources> {
   const provider = searchProviderName(env);
+  if (!provider) throw new Error('No search provider configured (set EXA_API_KEY or TAVILY_API_KEY).');
   const limit = Math.min(Math.max(opts.limit ?? 10, 1), 100);
-  // Category/domain scoping is Exa-only; Tavily fallback does a plain search.
-  if (provider === 'exa') {
-    return { web: await exaSearch(query, limit, env.EXA_API_KEY!, opts.category, opts.includeDomains), provider };
+  const sources = opts.sources && opts.sources.length ? opts.sources : ['web'];
+  const out: SearchSources = { provider };
+
+  if (sources.includes('web')) {
+    // Category/domain scoping is Exa-only; Tavily fallback does a plain search.
+    out.web =
+      provider === 'exa'
+        ? await exaSearch(query, limit, env.EXA_API_KEY!, opts.category, opts.includeDomains)
+        : await tavilySearch(query, limit, env.TAVILY_API_KEY!);
   }
-  if (provider === 'tavily') return { web: await tavilySearch(query, limit, env.TAVILY_API_KEY!), provider };
-  throw new Error('No search provider configured (set EXA_API_KEY or TAVILY_API_KEY).');
+  if (sources.includes('news')) {
+    // News: prefer Tavily's purpose-built `news` topic (actual articles, recency-ranked);
+    // fall back to Exa's `news` category when Tavily isn't configured.
+    if (env.TAVILY_API_KEY) out.news = await tavilySearch(query, limit, env.TAVILY_API_KEY, 'news');
+    else if (env.EXA_API_KEY) out.news = await exaSearch(query, limit, env.EXA_API_KEY, 'news', opts.includeDomains);
+    else out.news = [];
+  }
+  if (sources.includes('images')) {
+    // Image search: Tavily `include_images` (Exa has no image endpoint).
+    out.images = env.TAVILY_API_KEY ? await tavilyImages(query, limit, env.TAVILY_API_KEY) : [];
+  }
+  return out;
 }
 
 async function exaSearch(
@@ -82,11 +114,22 @@ async function exaSearch(
   }));
 }
 
-async function tavilySearch(query: string, limit: number, key: string): Promise<NormalizedResult[]> {
+async function tavilySearch(
+  query: string,
+  limit: number,
+  key: string,
+  topic?: 'news' | 'general',
+): Promise<NormalizedResult[]> {
   const res = await fetch('https://api.tavily.com/search', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ api_key: key, query, max_results: limit, search_depth: 'basic' }),
+    body: JSON.stringify({
+      api_key: key,
+      query,
+      max_results: limit,
+      search_depth: 'basic',
+      ...(topic ? { topic } : {}),
+    }),
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`Tavily search failed (${res.status})`);
@@ -98,4 +141,27 @@ async function tavilySearch(query: string, limit: number, key: string): Promise<
     title: r.title,
     description: r.content ? r.content.replace(/\s+/g, ' ').trim().slice(0, 300) : undefined,
   }));
+}
+
+/** Image search via Tavily `include_images`. Returns image URLs (+ descriptions when available). */
+async function tavilyImages(query: string, limit: number, key: string): Promise<ImageResult[]> {
+  const res = await fetch('https://api.tavily.com/search', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      api_key: key,
+      query,
+      max_results: limit,
+      include_images: true,
+      include_image_descriptions: true,
+    }),
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`Tavily image search failed (${res.status})`);
+  const body = (await res.json()) as { images?: Array<{ url: string; description?: string } | string> };
+  return (body.images ?? []).map((im, i) =>
+    typeof im === 'string'
+      ? { url: im, imageUrl: im, position: i + 1 }
+      : { url: im.url, imageUrl: im.url, title: im.description, position: i + 1 },
+  );
 }

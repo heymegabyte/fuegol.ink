@@ -68,8 +68,8 @@ export class ExtractCoordinator extends DurableObject<Env> {
       if (urls.length === 0) {
         // Agent / web-search mode: discover sources from the prompt.
         if (meta.body.enableWebSearch && searchAvailable(eng) && meta.body.prompt) {
-          const { web } = await webSearch(meta.body.prompt, { limit: 5 }, eng);
-          urls = web.map((r) => r.url).slice(0, MAX_URLS);
+          const { web } = await webSearch(meta.body.prompt, { limit: 5, sources: ['web'] }, eng);
+          urls = (web ?? []).map((r) => r.url).slice(0, MAX_URLS);
         }
         if (urls.length === 0) {
           throw new Error('Provide urls, or set enableWebSearch with a search provider configured.');

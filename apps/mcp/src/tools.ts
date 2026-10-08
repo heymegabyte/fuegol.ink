@@ -178,14 +178,24 @@ export const TOOLS: McpTool[] = [
       const body = (await res.json()) as {
         success?: boolean;
         error?: string;
-        data?: { web?: Array<Record<string, unknown>> };
+        data?: {
+          web?: Array<Record<string, unknown>>;
+          news?: Array<Record<string, unknown>>;
+          images?: Array<Record<string, unknown>>;
+        };
       };
       if (!res.ok || body.success === false) {
         return [{ type: 'text', text: `Search failed: ${body.error ?? res.status}` }];
       }
-      const web = body.data?.web ?? [];
-      const text = web
-        .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`)
+      const section = (label: string, rows?: Array<Record<string, unknown>>) =>
+        rows && rows.length
+          ? `## ${label}\n` +
+            rows
+              .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`.trim())
+              .join('\n\n')
+          : '';
+      const text = [section('Web', body.data?.web), section('News', body.data?.news), section('Images', body.data?.images)]
+        .filter(Boolean)
         .join('\n\n');
       return [{ type: 'text', text: text || 'No results.' }];
     },

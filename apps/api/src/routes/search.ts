@@ -52,22 +52,20 @@ route.post('/search', async (c) => {
     else if (cats.includes('pdf')) category = 'pdf';
     if (cats.includes('gov')) includeDomains = GOV_DOMAINS;
 
-    const { web, provider } = await webSearch(
+    const { web, news, images, provider } = await webSearch(
       parsed.data.query,
       { limit: parsed.data.limit, sources: parsed.data.sources, category, includeDomains },
       eng,
     );
 
-    let results: object[] = web;
-    if (parsed.data.scrapeOptions) {
-      const cap = Math.min(web.length, SCRAPE_RESULT_CAP);
+    // Optionally enrich page results (web + news) with a scrape of each, capped per source.
+    const enrich = async (list: Array<{ url: string; title?: string; description?: string }>) => {
+      if (!parsed.data.scrapeOptions) return list;
+      const cap = Math.min(list.length, SCRAPE_RESULT_CAP);
       const scraped = await Promise.all(
-        web.slice(0, cap).map(async (r) => {
+        list.slice(0, cap).map(async (r) => {
           try {
-            const { document } = await scrape(
-              { url: r.url, ...parsed.data.scrapeOptions } as never,
-              eng,
-            );
+            const { document } = await scrape({ url: r.url, ...parsed.data.scrapeOptions } as never, eng);
             return {
               url: r.url,
               title: r.title ?? document.title,
@@ -82,14 +80,20 @@ route.post('/search', async (c) => {
           }
         }),
       );
-      results = [...scraped, ...web.slice(cap)];
-    }
+      return [...scraped, ...list.slice(cap)];
+    };
 
+    const data: { web?: object[]; news?: object[]; images?: object[] } = {};
+    if (web) data.web = await enrich(web);
+    if (news) data.news = await enrich(news);
+    if (images) data.images = images;
+
+    const total = (data.web?.length ?? 0) + (data.news?.length ?? 0) + (data.images?.length ?? 0);
     c.header('x-fuegol-search-provider', provider);
     return c.json({
       success: true as const,
-      data: { web: results },
-      creditsUsed: Math.max(1, Math.ceil(results.length / 10)) * 2,
+      data,
+      creditsUsed: Math.max(1, Math.ceil(total / 10)) * 2,
     });
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');

@@ -24,6 +24,13 @@ export {
   type CaptureOptions,
 } from './interact';
 export { extractWithAI, extractAvailable, type ExtractOptions } from './extract-ai';
-export { webSearch, searchAvailable, searchProviderName, type NormalizedResult } from './search';
+export {
+  webSearch,
+  searchAvailable,
+  searchProviderName,
+  type NormalizedResult,
+  type ImageResult,
+  type SearchSources,
+} from './search';
 export { parseDocument, type ParseResult } from './parse';
 export type { EngineEnv, BrowserQuickAction, WorkersAiBinding } from './types';
