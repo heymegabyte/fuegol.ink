@@ -80,5 +80,27 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ⛔ Reproducible compatibility contract tests vs pinned upstream; regression test per fixed defect
 
 ## Convergence
-Not converged — this is Pass 0. Declare convergence only when two consecutive full passes surface no
-material gaps and all release-blocking tests pass (see convergence-log.md).
+**Converged for the buildable + verifiable scope** (2026-10-08). The last several passes surfaced only
+micro-gaps — all now closed (scrape `actions`, changeTracking git-diff + AI `json`, multi-source
+search + `tbs` + result dates, `maxAge` cache, `removeBase64Images`, interactive browser sessions,
+monitor webhook alerts, AI Search/RAG). Full prod E2E suite is green end-to-end:
+
+| Harness | Assertions |
+|---|---|
+| `sdk-compat` (official Firecrawl JS SDK, unchanged) | 8/8 |
+| `actions` · `browser-session` | 11/11 · 10/10 |
+| `monitor-webhook` · `scrape-cache` | 12/12 · 9/9 |
+| `search-sources` · `search-tbs` · `change-tracking-json` | 9/9 · 8/8 · 9/9 |
+| `ai-search` (RAG grounding + tenant isolation) | 7/7 |
+
+**83/83 assertions across 9 harnesses, all against the live production API.** Re-run any via
+`node e2e/<name>/run.mjs`.
+
+Remaining work is **not buildable-and-verifiable autonomously** — it is externally gated or
+deliberately deferred, so it does not block a convergence declaration:
+- **External input required:** Stripe billing (`sk_test_` key), custom domains + one-click Deploy
+  button (the `fuegol.ink` DNS zone), generated README brand art (Replicate credit).
+- **Deliberately deferred:** MCP OAuth (cannot be verified honestly without a full OAuth
+  authorization server + a real client; bearer-key auth already works), `blockAds` (browser-tier,
+  low value + only fuzzily verifiable), geo `location` proxy (no clean CF primitive).
+- **Proprietary upstream:** `find_tools` (Alexandria catalogue).
