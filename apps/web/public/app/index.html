@@ -116,6 +116,33 @@
     <pre class="out" id="pgOut"><span class="muted">Results appear here…</span></pre>
   </div>
 
+  <!-- BROWSER SESSION -->
+  <div class="card">
+    <h2>🖥️ Interactive browser session</h2>
+    <div class="hint">Drive a real headless browser live — click, type, scroll; the screenshot updates after every step. Metered: 2 credits to start, 1 per action.</div>
+    <div class="row">
+      <input class="grow" id="sessUrl" value="https://quotes.toscrape.com/" />
+      <button class="btn btn-p" id="sessStart">Start session →</button>
+    </div>
+    <div id="sessPanel" style="display:none;margin-top:14px">
+      <div id="sessStatus" class="mono" style="font-size:13px;color:var(--mut);margin-bottom:10px"></div>
+      <div class="row" style="margin-bottom:10px">
+        <input class="grow" id="sessSel" placeholder="CSS selector — e.g. li.next a" />
+        <button class="btn btn-g" id="sessClick">Click</button>
+        <input id="sessText" placeholder="text to type" style="width:150px" />
+        <button class="btn btn-g" id="sessType">Type</button>
+      </div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn btn-g" id="sessDown">Scroll ↓</button>
+        <button class="btn btn-g" id="sessUp">Scroll ↑</button>
+        <button class="btn btn-g" id="sessRefresh">Refresh view</button>
+        <button class="btn btn-g" id="sessClose">Close</button>
+      </div>
+      <div id="sessJs" class="mono" style="font-size:12px;color:var(--cyan);margin-bottom:8px"></div>
+      <img id="sessShot" alt="current page" style="display:none;width:100%;border:1px solid var(--line);border-radius:12px;background:#0a0a16" />
+    </div>
+  </div>
+
   <!-- USAGE -->
   <div class="card">
     <h2>📊 Recent usage</h2>
@@ -259,6 +286,51 @@ document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
   $('pgInput').value = ep === 'search' ? 'cloudflare workers' : 'https://example.com';
 });
 $('pgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+
+// ---- Interactive browser session ----
+let sess = null;
+function showSessPanel(on) { $('sessPanel').style.display = on ? '' : 'none'; $('sessStart').textContent = on ? 'Restart session →' : 'Start session →'; }
+
+async function sessAct(actions, label) {
+  if (!sess) return;
+  $('sessStatus').innerHTML = (label || 'Working') + ' …';
+  const { status, json } = await api('/v2/browser/' + sess + '/act', { method: 'POST', body: JSON.stringify({ actions }) });
+  if (status === 402) { $('sessStatus').textContent = 'Insufficient credits — top up or raise your spend limit.'; return; }
+  if (status === 404) { $('sessStatus').textContent = 'Session expired. Start a new one.'; sess = null; showSessPanel(false); return; }
+  if (!json || json.success === false) { $('sessStatus').textContent = 'Error: ' + ((json && json.error) || status); return; }
+  const shot = json.actions && json.actions.screenshots && json.actions.screenshots[0];
+  if (shot) { $('sessShot').src = shot; $('sessShot').style.display = ''; }
+  $('sessStatus').innerHTML = '<span class="pill">live</span> ' + (json.url || '') + ' · ' + (json.actCount ?? 0) + ' actions';
+  const jr = json.actions && json.actions.javascriptReturns && json.actions.javascriptReturns[0];
+  $('sessJs').textContent = jr ? 'JS → ' + JSON.stringify(jr.value) : '';
+  refreshAccount();
+}
+
+$('sessStart').onclick = async () => {
+  const url = $('sessUrl').value.trim();
+  if (!url) return;
+  $('sessStart').disabled = true;
+  $('sessShot').style.display = 'none';
+  $('sessJs').textContent = '';
+  showSessPanel(true);
+  $('sessStatus').textContent = 'Launching browser …';
+  try {
+    const { status, json } = await api('/v2/browser', { method: 'POST', body: JSON.stringify({ url }) });
+    if (status === 402) { $('sessStatus').textContent = 'Insufficient credits to start a session.'; showSessPanel(false); }
+    else if (status === 429) { $('sessStatus').textContent = 'Rate limited — add a key for higher limits.'; showSessPanel(false); }
+    else if (status === 501) { $('sessStatus').textContent = 'Sessions are not enabled on this deployment.'; showSessPanel(false); }
+    else if (json && json.id) { sess = json.id; await sessAct([{ type: 'screenshot' }], 'Rendering'); }
+    else { $('sessStatus').textContent = 'Could not start: ' + ((json && json.error) || status); showSessPanel(false); }
+  } catch (e) { $('sessStatus').textContent = 'Error: ' + e.message; showSessPanel(false); }
+  $('sessStart').disabled = false;
+  refreshAccount();
+};
+$('sessClick').onclick = () => { const s = $('sessSel').value.trim(); if (s) sessAct([{ type: 'click', selector: s }, { type: 'screenshot' }], 'Clicking'); };
+$('sessType').onclick = () => { const s = $('sessSel').value.trim(); if (s) sessAct([{ type: 'write', selector: s, text: $('sessText').value }, { type: 'screenshot' }], 'Typing'); };
+$('sessDown').onclick = () => sessAct([{ type: 'scroll', direction: 'down' }, { type: 'screenshot' }], 'Scrolling');
+$('sessUp').onclick = () => sessAct([{ type: 'scroll', direction: 'up' }, { type: 'screenshot' }], 'Scrolling');
+$('sessRefresh').onclick = () => sessAct([{ type: 'screenshot' }], 'Refreshing');
+$('sessClose').onclick = async () => { if (!sess) return; const id = sess; sess = null; showSessPanel(false); await api('/v2/browser/' + id, { method: 'DELETE' }); toast('Session closed'); refreshAccount(); };
 
 renderKey();
 if (key) refreshAccount();

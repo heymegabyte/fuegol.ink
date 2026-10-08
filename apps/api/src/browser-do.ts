@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import puppeteer from '@cloudflare/puppeteer';
-import type { BrowserWorker } from '@cloudflare/puppeteer';
+import type { BrowserWorker, Browser, Page } from '@cloudflare/puppeteer';
 import type { Action, Document } from '@fuegol/contracts';
 import { applyActions, captureDocument, assertSafeUrl, ActionError } from '@fuegol/engine';
 import { engineEnv, type Env } from './env';
@@ -46,6 +46,25 @@ function browserWorker(env: Env): BrowserWorker {
   return env.BROWSER as unknown as BrowserWorker;
 }
 
+/**
+ * Pick the live tab to drive after reconnecting. A reconnected browser can expose an extra
+ * `about:blank` tab alongside the one we navigated, and tab order isn't guaranteed — so prefer
+ * the most-recent non-blank page, fall back to the last page, then to a fresh one.
+ */
+async function activePage(browser: Browser): Promise<Page> {
+  const pages = await browser.pages();
+  const nonBlank = pages.filter((p) => {
+    try {
+      const u = p.url();
+      return Boolean(u) && u !== 'about:blank';
+    } catch {
+      return false;
+    }
+  });
+  const chosen = nonBlank[nonBlank.length - 1] ?? pages[pages.length - 1];
+  return chosen ?? (await browser.newPage());
+}
+
 export class BrowserSession extends DurableObject<Env> {
   /** Launch a browser, open + navigate a tab, and persist the session handle. */
   async create(input: { url: string; ownerKeyId: string | null }): Promise<SessionState> {
@@ -53,7 +72,8 @@ export class BrowserSession extends DurableObject<Env> {
     const browser = await puppeteer.launch(browserWorker(this.env), { keep_alive: KEEP_ALIVE_MS });
     try {
       const cfSessionId = browser.sessionId();
-      const page = await browser.newPage();
+      // Reuse the browser's initial tab so there's a single, unambiguous page to reattach to.
+      const page = (await browser.pages())[0] ?? (await browser.newPage());
       await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 30000 });
       const meta: SessionMeta = {
         cfSessionId,
@@ -93,8 +113,7 @@ export class BrowserSession extends DurableObject<Env> {
     }
 
     try {
-      const pages = await browser.pages();
-      const page = pages[0] ?? (await browser.newPage());
+      const page = await activePage(browser);
       const engine = engineEnv(this.env);
       const out = await applyActions(page, input.actions ?? [], engine);
       const formats = new Set(input.formats ?? ['markdown']);
