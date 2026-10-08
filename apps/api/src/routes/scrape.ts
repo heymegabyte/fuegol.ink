@@ -33,15 +33,22 @@ route.post('/scrape', async (c) => {
       (f) => f === 'changeTracking' || (typeof f === 'object' && f.type === 'changeTracking'),
     );
     if (ct && c.env.DB && typeof document.markdown === 'string') {
-      const cfg = (typeof ct === 'object' ? ct : {}) as { tag?: string | null; modes?: string[] };
+      const cfg = (typeof ct === 'object' ? ct : {}) as {
+        tag?: string | null;
+        modes?: string[];
+        prompt?: string;
+        schema?: Record<string, unknown>;
+      };
       const scope = c.get('principal').keyId ?? 'anon';
+      const modes = Array.isArray(cfg.modes) ? cfg.modes : [];
       document.changeTracking = await trackChange(
         c.env.DB,
         scope,
         document.url ?? parsed.data.url,
         cfg.tag || 'default',
         document.markdown,
-        Array.isArray(cfg.modes) && cfg.modes.includes('git-diff'),
+        modes.includes('git-diff'),
+        modes.includes('json') ? { env: engineEnv(c.env), prompt: cfg.prompt, schema: cfg.schema } : undefined,
       );
     }
 
