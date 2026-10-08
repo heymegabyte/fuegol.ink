@@ -50,7 +50,7 @@ route.post('/batch/scrape', async (c) => {
 
   const id = crypto.randomUUID();
   const stub = c.env.CRAWL.get(c.env.CRAWL.idFromName(id));
-  const { invalidURLs } = await stub.startBatch(parsed.data);
+  const { invalidURLs } = await stub.startBatch(parsed.data, id);
   return c.json({
     success: true as const,
     id,

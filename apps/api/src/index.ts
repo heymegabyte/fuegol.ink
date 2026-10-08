@@ -124,6 +124,29 @@ app.get('/assets/*', async (c) => {
   return new Response(obj.body, { headers });
 });
 
+// Webhook test sink (stores the last received signed webhook per id in R2; for
+// verifying delivery + signature). POST from a crawl/batch webhook, GET to inspect.
+app.post('/webhook-sink/:id', async (c) => {
+  if (!c.env.ARTIFACTS) return c.json({ ok: false }, 503);
+  const body = await c.req.text();
+  const record = {
+    signature: c.req.header('x-fuegol-signature') ?? '',
+    event: c.req.header('x-fuegol-event') ?? '',
+    body,
+    receivedAt: new Date().toISOString(),
+  };
+  await c.env.ARTIFACTS.put(`webhooks/${c.req.param('id')}.json`, JSON.stringify(record), {
+    httpMetadata: { contentType: 'application/json' },
+  });
+  return c.json({ ok: true });
+});
+app.get('/webhook-sink/:id', async (c) => {
+  if (!c.env.ARTIFACTS) return c.json({ received: false }, 404);
+  const obj = await c.env.ARTIFACTS.get(`webhooks/${c.req.param('id')}.json`);
+  if (!obj) return c.json({ received: false }, 404);
+  return new Response(obj.body, { headers: { 'content-type': 'application/json' } });
+});
+
 const v2 = new Hono<{ Bindings: Env; Variables: Vars }>();
 v2.route('/', scrapeRoute);
 v2.route('/', mapRoute);

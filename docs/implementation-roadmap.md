@@ -25,7 +25,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ `POST /v2/crawl` + `GET /v2/crawl/:id` (paginated) + `DELETE /v2/crawl/:id` + `GET /v2/crawl/:id/errors` + `/crawl/active` — **live, 11/11 E2E green**
 - ✅ MCP `firecrawl_crawl` + `firecrawl_check_crawl_status` wired via service binding to the crawl API
 - ✅ `POST /v2/batch/scrape` (+ status/cancel/errors) — reuses the crawl DO with a fixed frontier + no discovery; invalid-URL filtering + `ignoreInvalidURLs`; **9/9 E2E green**
-- v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: signed webhooks + retries, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
+- ✅ **Signed webhooks** on crawl/batch completion: HMAC-SHA256 (`x-fuegol-signature: sha256=…` + `x-fuegol-event`) with 3× retry; verified end-to-end (signature validates against `WEBHOOK_SECRET`)
+- v0 bounds: ≤100 pages/job, static tier. ⛔ Remaining: per-page/`started` webhook events, R2 result bundles for huge crawls, cross-DO active-crawl registry, visual site-link graph
 
 ## 🟡 Increment 3 — Search, research, monitoring
 - ✅ Pluggable web-search provider adapter (**Exa** primary, **Tavily** fallback) behind `SEARCH_PROVIDER`; keys are Worker secrets

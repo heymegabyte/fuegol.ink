@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { Document, CrawlRequest, BatchScrapeRequest } from '@fuegol/contracts';
 import { scrape, mapSite, assertSafeUrl, fetchRobots, isAllowed } from '@fuegol/engine';
 import { engineEnv, type Env } from './env';
+import { deliverWebhook } from './lib/webhook';
 
 /**
  * CrawlCoordinator — one SQLite-backed Durable Object per crawl job. Owns the frontier,
@@ -34,6 +35,8 @@ interface CrawlMeta {
   completedAt?: string;
   limit: number;
   maxDepth: number;
+  id?: string;
+  mode?: 'crawl' | 'batch';
 }
 
 interface CrawlError {
@@ -118,7 +121,7 @@ export class CrawlCoordinator extends DurableObject<Env> {
   }
 
   /** Initialize the job, seed the frontier (sitemap + start URL), and kick off the alarm loop. */
-  async start(body: CrawlRequest): Promise<{ ok: true }> {
+  async start(body: CrawlRequest, id?: string): Promise<{ ok: true }> {
     const base = assertSafeUrl(body.url);
     const limit = Math.min(body.limit ?? MAX_PAGES_CAP, MAX_PAGES_CAP);
     const ignoreQuery = body.ignoreQueryParameters ?? false;
@@ -133,6 +136,8 @@ export class CrawlCoordinator extends DurableObject<Env> {
       createdAt: new Date().toISOString(),
       limit,
       maxDepth: body.maxDiscoveryDepth ?? 1_000_000,
+      id,
+      mode: 'crawl',
     };
 
     const seen = new Set<string>([normalize(base.toString(), ignoreQuery)]);
@@ -176,7 +181,7 @@ export class CrawlCoordinator extends DurableObject<Env> {
   }
 
   /** Initialize a batch-scrape job: a crawl over a fixed frontier with no link discovery. */
-  async startBatch(body: BatchScrapeRequest): Promise<{ invalidURLs: string[] }> {
+  async startBatch(body: BatchScrapeRequest, id?: string): Promise<{ invalidURLs: string[] }> {
     const urls = body.urls ?? [];
     const valid: string[] = [];
     const invalidURLs: string[] = [];
@@ -209,6 +214,8 @@ export class CrawlCoordinator extends DurableObject<Env> {
       createdAt: new Date().toISOString(),
       limit: Math.min(Math.max(valid.length, 1), MAX_PAGES_CAP),
       maxDepth: 0,
+      id,
+      mode: 'batch',
     };
     if (valid.length === 0) meta.completedAt = new Date().toISOString();
 
@@ -303,6 +310,26 @@ export class CrawlCoordinator extends DurableObject<Env> {
     if (!done && !cancelled) {
       const delay = opts.delay ? Math.min(opts.delay * 1000, 60_000) : DEFAULT_DELAY_MS;
       await this.ctx.storage.setAlarm(Date.now() + delay);
+    }
+
+    // Deliver a signed completion webhook (best-effort, retried) when configured.
+    if (done && !cancelled && meta.options.webhook && this.env.WEBHOOK_SECRET) {
+      const type = meta.mode === 'batch' ? 'batch_scrape.completed' : 'crawl.completed';
+      await deliverWebhook(
+        meta.options.webhook,
+        {
+          success: true,
+          type,
+          id: meta.id ?? '',
+          metadata: {
+            ...(meta.options.webhook.metadata ?? {}),
+            total: meta.total,
+            completed: meta.completed,
+            creditsUsed: meta.creditsUsed,
+          },
+        },
+        this.env.WEBHOOK_SECRET,
+      );
     }
   }
 

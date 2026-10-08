@@ -40,7 +40,7 @@ route.post('/crawl', async (c) => {
   const id = crypto.randomUUID();
   const stub = c.env.CRAWL.get(c.env.CRAWL.idFromName(id));
   try {
-    await stub.start(parsed.data);
+    await stub.start(parsed.data, id);
   } catch (err) {
     if (err instanceof SsrfError) return fail(c, 400, err.message, 'unsafe_domain_blocked');
     return fail(c, 500, err instanceof Error ? err.message : 'Failed to start crawl', 'CRAWL_DENIAL');

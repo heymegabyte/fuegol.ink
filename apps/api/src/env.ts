@@ -28,6 +28,8 @@ export interface Env {
   /** R2 — screenshots + result artifacts; served via /assets/*. */
   ARTIFACTS?: R2Bucket;
   ASSET_BASE?: string;
+  /** Secret used to HMAC-sign outbound crawl/batch webhooks. */
+  WEBHOOK_SECRET?: string;
 }
 
 /** Project the Worker Env onto the engine's expected binding surface. */

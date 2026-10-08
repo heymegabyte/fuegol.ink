@@ -245,7 +245,8 @@ pnpm install && cd apps/api && pnpm exec wrangler deploy
   schemes, and re-validates every redirect hop; optional DNS-over-HTTPS rebinding check.
 - Respects `robots.txt` and Cloudflare Content Signals. No CAPTCHA bypass, credential theft, private-
   network scanning, or paywall circumvention.
-- Zero-data-retention mode, PII redaction, signed webhooks, and per-tenant isolation are on the roadmap.
+- **Signed webhooks** (HMAC-SHA256, `x-fuegol-signature`) fire on crawl/batch completion with retries.
+- Zero-data-retention mode, PII redaction, and per-tenant isolation are on the roadmap.
 
 ## Repository layout
 
