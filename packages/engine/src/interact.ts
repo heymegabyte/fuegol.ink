@@ -127,10 +127,17 @@ export async function applyActions(
   return out;
 }
 
+/** The subset of scrape options that affect content selection during capture. */
+export interface CaptureOptions {
+  onlyMainContent?: boolean;
+  includeTags?: string[];
+  excludeTags?: string[];
+}
+
 /** Build a Firecrawl Document from the *current* state of a live page (post-actions). */
 export async function captureDocument(
   page: Page,
-  options: ScrapeRequest,
+  options: CaptureOptions,
   formats: Set<string>,
   env: EngineEnv,
   statusCode: number,

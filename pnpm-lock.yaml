@@ -20,6 +20,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@cloudflare/puppeteer':
+        specifier: ^1.4.0
+        version: 1.4.0(supports-color@10.2.2)
       '@fuegol/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

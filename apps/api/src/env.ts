@@ -1,6 +1,7 @@
 import type { BrowserQuickAction, WorkersAiBinding, EngineEnv } from '@fuegol/engine';
 import type { CrawlCoordinator } from './crawl-do';
 import type { ExtractCoordinator } from './extract-do';
+import type { BrowserSession } from './browser-do';
 
 /** Worker environment bindings + vars. All data-plane bindings are optional so the
  *  Worker deploys and serves the free static tier on a bare account. */
@@ -23,6 +24,8 @@ export interface Env {
   CRAWL?: DurableObjectNamespace<CrawlCoordinator>;
   /** Durable Object namespace backing async extract jobs. */
   EXTRACT?: DurableObjectNamespace<ExtractCoordinator>;
+  /** Durable Object namespace backing persistent interactive browser sessions. */
+  BROWSER_SESSION?: DurableObjectNamespace<BrowserSession>;
   /** D1 — API keys + usage/credit ledger. */
   DB?: D1Database;
   /** R2 — screenshots + result artifacts; served via /assets/*. */

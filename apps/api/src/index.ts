@@ -8,6 +8,7 @@ import mapRoute from './routes/map';
 import crawlRoute from './routes/crawl';
 import batchRoute from './routes/batch';
 import extractRoute from './routes/extract';
+import browserRoute from './routes/browser';
 import searchRoute from './routes/search';
 import parseRoute from './routes/parse';
 import keysRoute from './routes/keys';
@@ -21,10 +22,14 @@ import { runDueMonitors } from './lib/monitor';
 
 export { CrawlCoordinator } from './crawl-do';
 export { ExtractCoordinator } from './extract-do';
+export { BrowserSession } from './browser-do';
 
 /** Map a request to its billable operation + credit cost (null = not billed). */
 function usageForRequest(method: string, path: string): { name: string; credits: number } | null {
   if (method !== 'POST') return null;
+  // Interactive browser sessions (dynamic :id in the act path): meter create + each act.
+  if (path === '/v2/browser') return { name: 'browser_session', credits: 2 };
+  if (/^\/v2\/browser\/[^/]+\/act$/.test(path)) return { name: 'browser_act', credits: 1 };
   switch (path) {
     case '/v2/scrape':
       return { name: 'scrape', credits: 1 };
@@ -156,6 +161,7 @@ v2.route('/', mapRoute);
 v2.route('/', crawlRoute);
 v2.route('/', batchRoute);
 v2.route('/', extractRoute);
+v2.route('/', browserRoute);
 v2.route('/', searchRoute);
 v2.route('/', parseRoute);
 v2.route('/', keysRoute);

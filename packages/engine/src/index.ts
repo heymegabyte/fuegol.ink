@@ -21,6 +21,7 @@ export {
   puppeteerAvailable,
   ActionError,
   type ActionsOutput,
+  type CaptureOptions,
 } from './interact';
 export { extractWithAI, extractAvailable, type ExtractOptions } from './extract-ai';
 export { webSearch, searchAvailable, searchProviderName, type NormalizedResult } from './search';

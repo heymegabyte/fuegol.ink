@@ -59,6 +59,9 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | POST | `/search` | Web search + optional result-scraping (Exa/Tavily adapter) | ✅ live |
 | POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
 | POST | `/parse` (+ `/parse/formats`) | Document parse — PDF (unpdf) / HTML / text → markdown; multipart or `{url}` | ✅ live |
+| POST | `/browser` | Create a persistent interactive browser session (`@cloudflare/puppeteer`, DO-backed) | ✅ live |
+| POST | `/browser/:id/act` | Drive the live session — actions mutate a persistent tab (state persists across calls) | ✅ live |
+| GET · DELETE | `/browser/:id` | Session state · terminate | ✅ live |
 | GET | `/team/credit-usage` (+ historical) | Credit balance (D1 ledger, live for keyed) | ✅ live |
 | POST | `/keys` (fuegol-native) | Self-serve API-key issuance (free tier) | ✅ live |
 | GET | `/team/token-usage` (+ historical) | Token balance | ⛔ |
@@ -67,8 +70,9 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | GET | `/keyless/eligibility` | Keyless gate | ⛔ |
 
 Legacy **`/v1/*`** paths are served by compatibility adapters (`/v1/map` string-array response,
-flat `formats`, `v0` unprefixed where trivial). Out-of-scope-for-now upstream families, tracked:
-`/agent*` (9), `/monitor*` (10), `/browser`+`/interact*` (8), `/slack`, `/support`, threat-protection, SIEM.
+flat `formats`, `v0` unprefixed where trivial). `/agent`, `/monitor*`, and the `/browser`+`/interact`
+interactive family are now **live** (see rows above + the Agent/Monitors increments). Remaining
+out-of-scope upstream families, tracked: `/slack`, `/support`, threat-protection, SIEM.
 
 ### `formats` (full enumeration, from pinned Zod)
 
