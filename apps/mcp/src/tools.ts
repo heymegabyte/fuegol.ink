@@ -17,6 +17,25 @@ async function apiFetch(env: Env, path: string, init: RequestInit = {}, auth?: s
 
 const sleepMs = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+/** Fetch from the Semantic Scholar graph API (free, no key — authorized research index).
+ *  Retries on 429 (S2 rate-limits unauthenticated traffic to ~1 req/s). */
+async function s2Fetch(url: string): Promise<Record<string, unknown>> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const res = await fetch(url, {
+      headers: { accept: 'application/json', 'user-agent': 'fuegolbot/0.1 (+https://fuegol.ink/bot)' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.status === 429) {
+      await sleepMs(1200 * (attempt + 1));
+      continue;
+    }
+    if (!res.ok) throw new Error(`Semantic Scholar ${res.status}`);
+    return (await res.json()) as Record<string, unknown>;
+  }
+  throw new Error('Semantic Scholar rate limit (429) after retries');
+}
+const S2 = 'https://api.semanticscholar.org/graph/v1';
+
 /** Start an agent job, poll to a terminal state, return the synthesized result. */
 async function proxyAgent(env: Env, args: Record<string, unknown>, auth?: string): Promise<McpContent> {
   const res = await apiFetch(env, '/v2/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(args) }, auth);
@@ -270,17 +289,60 @@ export const TOOLS: McpTool[] = [
     inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
     handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['research'], Number(a.k) || 40),
   },
-  mkStub('firecrawl_research_inspect_paper', 'Canonical metadata for one paper ID.', ['search'], {
-    paperId: { type: 'string' },
-  }, ['paperId'], 'Scholarly research index — Increment 3.'),
-  mkStub('firecrawl_research_related_papers', 'Citation-graph expansion from seed paper IDs.', ['search'], {
-    seed_ids: { type: 'array', items: { type: 'string' } },
-    intent: { type: 'string' },
-  }, ['seed_ids', 'intent'], 'Scholarly research index — Increment 3.'),
-  mkStub('firecrawl_research_read_paper', 'Retrieve relevant passages from one paper.', ['search'], {
-    paperId: { type: 'string' },
-    question: { type: 'string' },
-  }, ['paperId', 'question'], 'Scholarly research index — Increment 3.'),
+  {
+    name: 'firecrawl_research_inspect_paper',
+    description: 'Canonical metadata for one paper ID (arXiv:…, DOI:…, CorpusId:…) via Semantic Scholar.',
+    profiles: ['search'],
+    inputSchema: { type: 'object', properties: { paperId: { type: 'string' } }, required: ['paperId'] },
+    handler: async (a) => {
+      try {
+        const p = await s2Fetch(`${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,year,venue,citationCount,authors.name,url,tldr`);
+        const authors = ((p.authors as Array<{ name?: string }>) ?? []).map((x) => x.name).join(', ');
+        const tldr = (p.tldr as { text?: string } | null)?.text;
+        return [{ type: 'text', text: `${p.title ?? '(untitled)'} (${p.year ?? '?'})\nAuthors: ${authors || '—'}\nVenue: ${p.venue || '—'} · Citations: ${p.citationCount ?? '—'}\n${p.url || ''}${tldr ? `\nTL;DR: ${tldr}` : ''}\n\nAbstract:\n${p.abstract || '(no abstract)'}` }];
+      } catch (e) {
+        return [{ type: 'text', text: `Paper lookup failed: ${(e as Error).message}` }];
+      }
+    },
+  },
+  {
+    name: 'firecrawl_research_related_papers',
+    description: 'Find papers related to a seed paper ID (Semantic Scholar recommendations).',
+    profiles: ['search'],
+    inputSchema: {
+      type: 'object',
+      properties: { seed_ids: { type: 'array', items: { type: 'string' } }, paperId: { type: 'string' }, k: { type: 'number' } },
+      required: [],
+    },
+    handler: async (a) => {
+      const seed = Array.isArray(a.seed_ids) && a.seed_ids.length ? String(a.seed_ids[0]) : String(a.paperId ?? '');
+      if (!seed) return [{ type: 'text', text: 'Provide a seed paperId or seed_ids.' }];
+      const k = Number(a.k) || 10;
+      try {
+        const body = await s2Fetch(`https://api.semanticscholar.org/recommendations/v1/papers/forpaper/${encodeURIComponent(seed)}?fields=title,year,authors.name&limit=${k}`);
+        const papers = (body.recommendedPapers as Array<Record<string, unknown>>) ?? [];
+        const text = papers.map((p, i) => `${i + 1}. ${p.title} (${p.year ?? '?'})`).join('\n');
+        return [{ type: 'text', text: text || 'No related papers found.' }];
+      } catch (e) {
+        return [{ type: 'text', text: `Related-papers lookup failed: ${(e as Error).message}` }];
+      }
+    },
+  },
+  {
+    name: 'firecrawl_research_read_paper',
+    description: 'Read a paper relevant to a question — returns its TL;DR + abstract (full-text passages unavailable via this index).',
+    profiles: ['search'],
+    inputSchema: { type: 'object', properties: { paperId: { type: 'string' }, question: { type: 'string' } }, required: ['paperId'] },
+    handler: async (a) => {
+      try {
+        const p = await s2Fetch(`${S2}/paper/${encodeURIComponent(String(a.paperId ?? ''))}?fields=title,abstract,tldr`);
+        const tldr = (p.tldr as { text?: string } | null)?.text;
+        return [{ type: 'text', text: `Re: "${a.question ?? ''}"\n\n${p.title ?? ''}\nTL;DR: ${tldr || '—'}\n\nAbstract:\n${p.abstract || '(no abstract; full-text passage retrieval is not available via this index)'}` }];
+      } catch (e) {
+        return [{ type: 'text', text: `Paper read failed: ${(e as Error).message}` }];
+      }
+    },
+  },
   mkStub('firecrawl_find_tools', 'Browse the data-provider catalogue (Alexandria-style).', ['search'], {
     query: { type: 'string' },
   }, [], 'Provider discovery — Increment 3.'),
