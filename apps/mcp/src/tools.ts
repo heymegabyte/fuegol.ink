@@ -4,10 +4,40 @@ import { engineEnv, DEFAULT_API_BASE, type Env } from './env';
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const CRAWL_TEXT_CAP = 12_000;
 
-/** Call the REST API via the service binding (preferred) or public fetch (self-host fallback). */
-async function apiFetch(env: Env, path: string, init?: RequestInit): Promise<Response> {
-  if (env.API) return env.API.fetch(new Request(`https://fuegol-api.internal${path}`, init));
-  return fetch(`${env.API_BASE || DEFAULT_API_BASE}${path}`, init);
+/** Call the REST API via the service binding (preferred) or public fetch (self-host
+ *  fallback). Forwards the caller's Authorization header so authed tools hit the
+ *  user's key + credit ledger. */
+async function apiFetch(env: Env, path: string, init: RequestInit = {}, auth?: string): Promise<Response> {
+  const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
+  if (auth) headers.authorization = auth;
+  const url = env.API ? `https://fuegol-api.internal${path}` : `${env.API_BASE || DEFAULT_API_BASE}${path}`;
+  const req = new Request(url, { ...init, headers });
+  return env.API ? env.API.fetch(req) : fetch(req);
+}
+
+const sleepMs = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** Start an agent job, poll to a terminal state, return the synthesized result. */
+async function proxyAgent(env: Env, args: Record<string, unknown>, auth?: string): Promise<McpContent> {
+  const res = await apiFetch(env, '/v2/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(args) }, auth);
+  const start = (await res.json()) as { id?: string; error?: string };
+  if (!res.ok || !start.id) return [{ type: 'text', text: `Agent failed: ${start.error ?? res.status}` }];
+  let last: Record<string, unknown> = {};
+  for (let i = 0; i < 20; i += 1) {
+    await sleepMs(1500);
+    const s = await apiFetch(env, `/v2/agent/${start.id}`, {}, auth);
+    last = (await s.json()) as Record<string, unknown>;
+    if (typeof last.status === 'string' && last.status !== 'processing') break;
+  }
+  return [{ type: 'text', text: JSON.stringify({ status: last.status, data: last.data, sources: last.sources }, null, 2) }];
+}
+
+/** Proxy a monitor action to the authed REST API. */
+async function proxyMonitor(env: Env, method: string, path: string, body: unknown, auth?: string): Promise<McpContent> {
+  const res = await apiFetch(env, path, body ? { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : { method }, auth);
+  const json = await res.json();
+  if (res.status === 401) return [{ type: 'text', text: 'Monitors require a fuegol.ink API key. Send it as Authorization: Bearer fgl_live_… to this MCP server.' }];
+  return [{ type: 'text', text: JSON.stringify(json, null, 2) }];
 }
 
 /** Category-scoped search via /v2/search (Exa category/domain scoping under the hood). */
@@ -38,7 +68,7 @@ export interface McpTool {
   description: string;
   profiles: ToolProfile[];
   inputSchema: Record<string, unknown>;
-  handler: (args: Record<string, unknown>, env: Env) => Promise<McpContent>;
+  handler: (args: Record<string, unknown>, env: Env, auth?: string) => Promise<McpContent>;
 }
 
 const notYet = (hint: string) => async (): Promise<McpContent> => {
@@ -254,6 +284,50 @@ export const TOOLS: McpTool[] = [
   mkStub('firecrawl_find_tools', 'Browse the data-provider catalogue (Alexandria-style).', ['search'], {
     query: { type: 'string' },
   }, [], 'Provider discovery — Increment 3.'),
+  {
+    name: 'firecrawl_agent',
+    description:
+      'Autonomous web research. Given a prompt (and optional JSON schema), discover sources via search, scrape them, and return a synthesized structured answer with its sources.',
+    profiles: ['full'],
+    inputSchema: {
+      type: 'object',
+      properties: { prompt: { type: 'string' }, urls: { type: 'array', items: { type: 'string' } }, schema: { type: 'object' } },
+      required: ['prompt'],
+    },
+    handler: (a, e, auth) => proxyAgent(e, a, auth),
+  },
+  {
+    name: 'firecrawl_monitor_create',
+    description: 'Create a recurring change-detection monitor for a URL (checked on a schedule). Requires an API key.',
+    profiles: ['full'],
+    inputSchema: {
+      type: 'object',
+      properties: { url: { type: 'string' }, name: { type: 'string' }, tag: { type: 'string' } },
+      required: ['url'],
+    },
+    handler: (a, e, auth) => proxyMonitor(e, 'POST', '/v2/monitor', a, auth),
+  },
+  {
+    name: 'firecrawl_monitor_list',
+    description: 'List your change-detection monitors. Requires an API key.',
+    profiles: ['full'],
+    inputSchema: { type: 'object', properties: {} },
+    handler: (_a, e, auth) => proxyMonitor(e, 'GET', '/v2/monitor', null, auth),
+  },
+  {
+    name: 'firecrawl_monitor_run',
+    description: 'Run a monitor check now and return its change status. Requires an API key.',
+    profiles: ['full'],
+    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+    handler: (a, e, auth) => proxyMonitor(e, 'POST', `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/run`, {}, auth),
+  },
+  {
+    name: 'firecrawl_monitor_checks',
+    description: 'List historical checks for a monitor. Requires an API key.',
+    profiles: ['full'],
+    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+    handler: (a, e, auth) => proxyMonitor(e, 'GET', `/v2/monitor/${encodeURIComponent(String(a.id ?? ''))}/checks`, null, auth),
+  },
 ];
 
 function mkStub(

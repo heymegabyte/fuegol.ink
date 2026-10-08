@@ -27,7 +27,7 @@ function rpcError(id: JsonRpcRequest['id'], code: number, message: string) {
   return { jsonrpc: '2.0' as const, id: id ?? null, error: { code, message } };
 }
 
-async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile): Promise<object | null> {
+async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile, auth?: string): Promise<object | null> {
   if (!req || req.jsonrpc !== '2.0' || typeof req.method !== 'string') {
     return rpcError(req?.id ?? null, -32600, 'Invalid Request');
   }
@@ -60,7 +60,7 @@ async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile): P
       const tool = TOOLS.find((t) => t.name === name && t.profiles.includes(profile));
       if (!tool) return rpcError(req.id, -32602, `Unknown tool: ${name ?? '(none)'}`);
       try {
-        const content: McpContent = await tool.handler(args, env);
+        const content: McpContent = await tool.handler(args, env, auth);
         return result(req.id, { content, isError: false });
       } catch (err) {
         const { text } = toolError(err);
@@ -72,11 +72,11 @@ async function handleOne(req: JsonRpcRequest, env: Env, profile: ToolProfile): P
   }
 }
 
-async function handleMcp(body: unknown, env: Env, profile: ToolProfile): Promise<{ status: number; json?: unknown }> {
+async function handleMcp(body: unknown, env: Env, profile: ToolProfile, auth?: string): Promise<{ status: number; json?: unknown }> {
   const batch = Array.isArray(body) ? (body as JsonRpcRequest[]) : [body as JsonRpcRequest];
   const responses: object[] = [];
   for (const req of batch) {
-    const res = await handleOne(req, env, profile);
+    const res = await handleOne(req, env, profile, auth);
     if (res !== null) responses.push(res);
   }
   if (responses.length === 0) return { status: 202 };
@@ -110,7 +110,7 @@ const mount = (path: string, profile: ToolProfile) => {
     } catch {
       return c.json(rpcError(null, -32700, 'Parse error'), 400);
     }
-    const { status, json } = await handleMcp(body, c.env, profile);
+    const { status, json } = await handleMcp(body, c.env, profile, c.req.header('authorization') ?? undefined);
     if (status === 202) return c.body(null, 202);
     return c.json(json as object, 200);
   });

@@ -34,14 +34,15 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
 - ✅ **Category search via Exa scoping**: `/v2/search` `categories` (developer/github → GitHub, research → research-paper, pdf, gov → gov-domain list) + MCP `firecrawl_developer_search` / `firecrawl_gov_search` / `firecrawl_research_search_papers` now real (verified: NeurIPS/ACM papers, ecfr/congress.gov, github). ⛔ remaining: news/images sources, paper inspect/related/read, find_tools
 - ✅ **Monitors** (D1 `monitors`/`monitor_checks` + changeTracking + Cron `*/15`): `POST /v2/monitor` + list/get/delete/`:id/run`/`:id/checks`; change detection verified (new→changed), migration 0004
-- ⛔ Tenant Cloudflare AI Search indexing; monitor webhook alerts; MCP monitor tools (need key forwarding)
+- ⛔ Tenant Cloudflare AI Search indexing; monitor webhook alerts
 
 ## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)
 - ✅ Stateless Streamable-HTTP JSON-RPC server **live at https://fuegol-mcp.manhattan.workers.dev**
 - ✅ `/v2/mcp` (full), `/v2/mcp-search` (search profile), `/mcp` alias; profile-scoped tool lists
 - ✅ `firecrawl_scrape` + `firecrawl_map` are real working tools (call the engine); others advertised + honest-error
 - ✅ 17/17 MCP protocol E2E green (initialize, tools/list, tools/call live scrape, SSRF, profile scoping, notifications)
-- ⛔ OAuth discovery + bearer keys + scoped per-tool permissions; keyless 3-tool profile
+- ✅ **Bearer-key auth forwarding**: the MCP forwards the caller's `Authorization` to the API → authed tools hit the user's ledger; `firecrawl_agent` + `firecrawl_monitor_*` now live over MCP (verified)
+- ⛔ OAuth discovery + scoped per-tool permissions; keyless 3-tool profile
 - ⛔ Wire remaining tools as their increments land; migrate to Cloudflare `createMcpHandler` once its wiring is verified
 - ⛔ MCP contract tests vs pinned upstream; tested with Claude Code + Codex
 
