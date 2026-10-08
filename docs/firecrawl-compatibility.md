@@ -25,11 +25,11 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | POST | `/scrape` | Scrape one URL (all formats) | 🟡 markdown/html/links/metadata live; AI-json/screenshot via browser tier ⛔ |
 | GET | `/scrape/:jobId` | Async scrape fetch | ⛔ |
 | POST | `/map` | Enumerate site URLs | ✅ sitemap + link discovery |
-| POST | `/crawl` | Start multi-page crawl | 🟡 contract + planner; Queues/Workflow execution ⛔ |
-| GET | `/crawl/:jobId` | Crawl status + page | 🟡 |
-| DELETE | `/crawl/:jobId` | Cancel crawl | 🟡 |
-| GET | `/crawl/:jobId/errors` | Crawl errors | 🟡 |
-| GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | ⛔ |
+| POST | `/crawl` | Start multi-page crawl (Durable-Object coordinator) | ✅ live |
+| GET | `/crawl/:jobId` | Crawl status + paginated pages | ✅ live |
+| DELETE | `/crawl/:jobId` | Cancel crawl (race-safe) | ✅ live |
+| GET | `/crawl/:jobId/errors` | Crawl errors + robotsBlocked | ✅ live |
+| GET | `/crawl/active` · `/crawl/ongoing` | Active crawls | 🟡 empty (no cross-DO registry yet) |
 | POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
 | POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape | ⛔ |
 | POST | `/search` | Web/news/image + category search | 🟡 contract; provider adapter ⛔ |

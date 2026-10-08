@@ -7,9 +7,14 @@
   "observability": { "enabled": true },
   "vars": {
     "DEMO_MODE": "true",
-    "SERVICE_ORIGIN": "https://api.fuegol.ink",
+    "SERVICE_ORIGIN": "https://fuegol-api.manhattan.workers.dev",
     "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)"
-  }
+  },
+
+  "durable_objects": {
+    "bindings": [{ "name": "CRAWL", "class_name": "CrawlCoordinator" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CrawlCoordinator"] }]
 
   // --- Optional bindings (uncomment + provision to enable higher tiers) ---
   //
@@ -25,6 +30,6 @@
   // R2 (crawl artifacts, screenshots, result bundles):
   //   "r2_buckets": [{ "binding": "ARTIFACTS", "bucket_name": "fuegol-artifacts" }]
   //
-  // Queues (async crawl / batch orchestration):
+  // Queues (async batch orchestration):
   //   "queues": { "producers": [{ "binding": "CRAWL_QUEUE", "queue": "fuegol-crawl" }] }
 }

@@ -1,5 +1,14 @@
 import { scrape, mapSite, SsrfError } from '@fuegol/engine';
-import { engineEnv, type Env } from './env';
+import { engineEnv, DEFAULT_API_BASE, type Env } from './env';
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const CRAWL_TEXT_CAP = 12_000;
+
+/** Call the REST API via the service binding (preferred) or public fetch (self-host fallback). */
+async function apiFetch(env: Env, path: string, init?: RequestInit): Promise<Response> {
+  if (env.API) return env.API.fetch(new Request(`https://fuegol-api.internal${path}`, init));
+  return fetch(`${env.API_BASE || DEFAULT_API_BASE}${path}`, init);
+}
 
 /** Thrown by tools whose execution is a later increment — surfaced as an MCP tool
  *  error (isError:true), never a fabricated success. */
@@ -101,23 +110,80 @@ export const TOOLS: McpTool[] = [
   },
   {
     name: 'firecrawl_crawl',
-    description: 'Start a multi-page crawl, poll to a terminal state, and return collected pages.',
+    description:
+      'Start a multi-page crawl of a website, poll it to a terminal state, and return the collected pages as markdown. Backed by the fuegol crawl Durable Object.',
     profiles: ['full'],
     inputSchema: {
       type: 'object',
-      properties: { url: { type: 'string' }, limit: { type: 'number' }, prompt: { type: 'string' } },
+      properties: {
+        url: { type: 'string' },
+        limit: { type: 'number', description: 'Max pages (v0 cap 100).' },
+        includePaths: { type: 'array', items: { type: 'string' } },
+        excludePaths: { type: 'array', items: { type: 'string' } },
+        maxDiscoveryDepth: { type: 'number' },
+        allowSubdomains: { type: 'boolean' },
+        sitemap: { type: 'string', enum: ['include', 'only', 'skip'] },
+      },
       required: ['url'],
     },
-    handler: notYet(
-      'firecrawl_crawl (async Durable-Object coordinator) is the next increment — see docs/implementation-roadmap.md Increment 2.',
-    ),
+    handler: async (args, env) => {
+      const base = env.API_BASE || DEFAULT_API_BASE;
+      const res = await apiFetch(env, '/v2/crawl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(args),
+      });
+      const start = (await res.json()) as { id?: string; error?: string };
+      if (!res.ok || !start.id) {
+        return [{ type: 'text', text: `Crawl failed to start: ${start.error ?? JSON.stringify(start)}` }];
+      }
+      const id = start.id;
+      let last: Record<string, unknown> = {};
+      for (let i = 0; i < 20; i += 1) {
+        await sleep(1000);
+        const sres = await apiFetch(env, `/v2/crawl/${id}`);
+        last = (await sres.json()) as Record<string, unknown>;
+        if (typeof last.status === 'string' && last.status !== 'scraping') break;
+      }
+      const data = (last.data as Array<Record<string, unknown>>) ?? [];
+      let body = data
+        .map((d, i) => {
+          const meta = (d.metadata as Record<string, unknown>) ?? {};
+          return `### ${i + 1}. ${(meta.sourceURL as string) ?? (d.url as string) ?? ''}\n${(d.markdown as string) ?? ''}`;
+        })
+        .join('\n\n---\n\n');
+      if (body.length > CRAWL_TEXT_CAP) body = `${body.slice(0, CRAWL_TEXT_CAP)}\n\n…[truncated — fetch more via firecrawl_check_crawl_status]`;
+      const summary = `Crawl ${id} · status=${last.status} · completed=${last.completed}/${last.total} · credits=${last.creditsUsed}\nStatus URL: ${base}/v2/crawl/${id}`;
+      return [{ type: 'text', text: `${summary}\n\n${body}` }];
+    },
   },
   {
     name: 'firecrawl_check_crawl_status',
-    description: 'Retrieve the status/results of an existing crawl ID.',
+    description: 'Retrieve the status + collected pages of an existing crawl ID.',
     profiles: ['full'],
-    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
-    handler: notYet('Crawl status arrives with firecrawl_crawl (Increment 2).'),
+    inputSchema: {
+      type: 'object',
+      properties: { id: { type: 'string' }, skip: { type: 'number' } },
+      required: ['id'],
+    },
+    handler: async (args, env) => {
+      const id = String(args.id ?? '');
+      const skip = Number(args.skip ?? 0) || 0;
+      const res = await apiFetch(env, `/v2/crawl/${encodeURIComponent(id)}${skip ? `?skip=${skip}` : ''}`);
+      if (res.status === 404) return [{ type: 'text', text: `Crawl job not found: ${id}` }];
+      const s = (await res.json()) as Record<string, unknown>;
+      const data = (s.data as unknown[]) ?? [];
+      return [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            { status: s.status, completed: s.completed, total: s.total, creditsUsed: s.creditsUsed, next: s.next, pagesInThisPage: data.length },
+            null,
+            2,
+          ),
+        },
+      ];
+    },
   },
   // --- search-only profile research tools (contract-present, honest stubs) ---
   mkStub('firecrawl_developer_search', 'Search public repos / issues / PRs / code docs.', ['search'], {

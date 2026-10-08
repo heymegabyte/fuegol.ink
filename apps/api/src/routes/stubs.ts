@@ -10,6 +10,7 @@ const route = new Hono<{ Bindings: Env; Variables: Vars }>();
  * Endpoints whose contract is defined (packages/contracts) but whose execution is a
  * later increment. We return an honest 501 with the Firecrawl error envelope and a
  * pointer — never a fake success object. Status in docs/firecrawl-compatibility.md.
+ * (Crawl is now real — see routes/crawl.ts.)
  */
 function notYet(feature: string, hint: string) {
   return (c: Context<{ Bindings: Env; Variables: Vars }>) =>
@@ -25,14 +26,7 @@ function notYet(feature: string, hint: string) {
 
 const ROADMAP = 'See docs/implementation-roadmap.md.';
 
-// Crawl (async; Durable-Object coordinator + Queues — next increment)
-route.post('/crawl', notYet('Async crawl', `A Durable-Object crawl coordinator is the next increment. ${ROADMAP}`));
-route.get('/crawl/:id', notYet('Crawl status', ROADMAP));
-route.delete('/crawl/:id', notYet('Crawl cancel', ROADMAP));
-route.get('/crawl/:id/errors', notYet('Crawl errors', ROADMAP));
-route.get('/crawl/active', notYet('Active crawls', ROADMAP));
-
-// Batch scrape (Queues fan-out)
+// Batch scrape (Queues fan-out — reuses the crawl DO pattern)
 route.post('/batch/scrape', notYet('Batch scrape', `Queues fan-out increment. ${ROADMAP}`));
 route.get('/batch/scrape/:id', notYet('Batch scrape status', ROADMAP));
 

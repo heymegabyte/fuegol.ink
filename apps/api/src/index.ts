@@ -5,9 +5,12 @@ import type { Env } from './env';
 import { principal, type Vars } from './lib/auth';
 import scrapeRoute from './routes/scrape';
 import mapRoute from './routes/map';
+import crawlRoute from './routes/crawl';
 import accountRoute from './routes/account';
 import stubsRoute from './routes/stubs';
 import v1Route from './routes/v1';
+
+export { CrawlCoordinator } from './crawl-do';
 
 const app = new Hono<{ Bindings: Env; Variables: Vars }>();
 
@@ -32,7 +35,8 @@ app.get('/', (c) =>
     endpoints: {
       scrape: 'POST /v2/scrape',
       map: 'POST /v2/map',
-      crawl: 'POST /v2/crawl (coming soon)',
+      crawl: 'POST /v2/crawl',
+      crawlStatus: 'GET /v2/crawl/:id',
       search: 'POST /v2/search (coming soon)',
       creditUsage: 'GET /v2/team/credit-usage',
       health: 'GET /health',
@@ -45,6 +49,7 @@ app.get('/health', (c) => c.json({ status: 'ok', service: 'fuegol-api', version:
 const v2 = new Hono<{ Bindings: Env; Variables: Vars }>();
 v2.route('/', scrapeRoute);
 v2.route('/', mapRoute);
+v2.route('/', crawlRoute);
 v2.route('/', accountRoute);
 v2.route('/', stubsRoute);
 app.route('/v2', v2);
