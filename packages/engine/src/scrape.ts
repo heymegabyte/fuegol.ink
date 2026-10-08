@@ -109,8 +109,9 @@ export async function scrape(request: ScrapeRequest, env: EngineEnv): Promise<Sc
     doc.warning = appendWarning(doc.warning, `formats [${deferred.join(', ')}] are planned, not yet served.`);
   }
 
-  // Low-yield static output on a script-heavy page → escalate to the browser tier.
-  if (plan.allowEscalation && wantMarkdown && markdown.length < 200) {
+  // Near-empty static output (likely a client-rendered SPA) → escalate to the browser
+  // tier. Conservative threshold so real-but-short pages don't incur browser cost.
+  if (plan.allowEscalation && wantMarkdown && markdown.length < 100) {
     try {
       const r = await browserQuickAction<string>(env, 'markdown', { url: finalUrl });
       if (r.result && r.result.length > markdown.length) {
@@ -135,8 +136,10 @@ async function browserScrape(
   const doc: Document = { url, metadata: { statusCode: 200, sourceURL: url, url } };
 
   if (formats.has('markdown') || formats.size === 0) {
-    const r = await browserQuickAction<string>(env, 'markdown', { url });
-    if (r.result) doc.markdown = r.result;
+    let r = await browserQuickAction<string>(env, 'markdown', { url });
+    if (!r.result) r = await browserQuickAction<string>(env, 'markdown', { url }); // retry browser cold-start
+    // Browser Rendering /markdown prepends YAML frontmatter; strip it for Firecrawl parity.
+    if (r.result) doc.markdown = r.result.replace(/^---\n[\s\S]*?\n---\n+/, '');
   }
   if (formats.has('html')) {
     const r = await browserQuickAction<string>(env, 'content', { url });

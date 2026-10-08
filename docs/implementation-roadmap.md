@@ -13,7 +13,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 
 ## 🟡 Increment 1 — Scrape completeness + custom domains
 - ✅ **AI structured extraction (Workers AI)**: `scrape {type:"json"}` + async `POST /v2/extract` (ExtractCoordinator DO, schema/prompt-guided) — **10/10 E2E green**
-- 🟡 Browser tier: bind `env.BROWSER` → JS render + screenshots→R2 asset URLs (AI json already works without it)
+- ✅ **Browser Rendering tier live** (`env.BROWSER` Quick Actions): JS-rendered scrape engages on waitFor/actions/mobile/stealth + near-empty-static escalation; cold-start retry; frontmatter stripped for parity. Verified against a JS SPA (quotes.toscrape.com/js → real quotes). ⛔ remaining: screenshots→R2 asset URLs, browser-tier `{type:"json"}`
+- 🟡 `changeTracking` format (needs a stored prior-scrape index in R2/D1)
 - ✅ Document parse (`/v2/parse` + `/parse/formats`): **PDF via `unpdf` (Workers-native)** + HTML/text → markdown, multipart or `{url}` — **12/12 E2E green**. ⛔ remaining: DOCX/XLSX/PPTX (no Workers-safe parser yet)
 - ⛔ `changeTracking` format (needs a stored prior-scrape index in R2/D1)
 - ⛔ Custom domains: `api.fuegol.ink`, route binding in wrangler (needs zone)
