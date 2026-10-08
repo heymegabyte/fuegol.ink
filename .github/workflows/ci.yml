@@ -18,8 +18,13 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      # --ignore-scripts avoids pnpm 11's ERR_PNPM_IGNORED_BUILDS (native build scripts for
+      # canvas/workerd aren't needed for typecheck + unit tests). esbuild is rebuilt explicitly
+      # because vitest needs its binary.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Typecheck (all packages)
         run: pnpm -r --if-present typecheck
       - name: Unit tests (engine)
-        run: pnpm --filter @fuegol/engine test
+        run: |
+          pnpm rebuild esbuild
+          pnpm --filter @fuegol/engine test
