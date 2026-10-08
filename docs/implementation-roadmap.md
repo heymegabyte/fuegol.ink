@@ -42,7 +42,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 
 ## 🟡 Increment 5 — Billing (Stripe) + credit ledger
 - ✅ D1 key store (`POST /v2/keys`, SHA-256-hashed, plan→credits) + transactional usage ledger (`usage_events`); live balance + history via `/team/credit-usage[/historical]`; usage middleware records per-op credits (scrape 1 / map 1 / search 2 / extract 5 / parse 1 / crawl+batch 1) — **9/9 E2E green**
-- ⛔ Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, hard spend ceilings, reserve-before-expensive-work + reconcile, per-page crawl reconciliation. **Test mode until explicitly approved for live.**
+- ✅ Enforced credit ceilings (reserve-before-work → **402** on insufficient credits) + user-configurable hard spend limit (`POST/GET /v2/team/spend-limit`, migration 0002) — **E2E green**
+- ⛔ Stripe Checkout subs (5 tiers), Customer Portal, usage meters + webhooks, per-page crawl reconciliation. **BLOCKED:** only a LIVE Stripe key (`sk_live_`) is available — deferred until a `sk_test_` key is provided; must not risk real charges per the build mandate.
 
 ## ⛔ Increment 6 — Website + dashboard
 - `fuegol.ink` cinematic marketing (near-black / electric-cyan / amber-flame) + public demo playground

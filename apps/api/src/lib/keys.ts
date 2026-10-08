@@ -13,6 +13,7 @@ export interface ResolvedKey {
   id: string;
   plan: string;
   monthlyCredits: number;
+  spendLimit: number | null;
 }
 
 async function sha256hex(input: string): Promise<string> {
@@ -46,8 +47,17 @@ export async function createKey(
 
 export async function resolveKey(db: D1Database, key: string): Promise<ResolvedKey | null> {
   const row = await db
-    .prepare('SELECT id, plan, monthly_credits AS monthlyCredits FROM api_keys WHERE key_hash = ? AND revoked = 0')
+    .prepare(
+      'SELECT id, plan, monthly_credits AS monthlyCredits, spend_limit AS spendLimit FROM api_keys WHERE key_hash = ? AND revoked = 0',
+    )
     .bind(await sha256hex(key))
-    .first<{ id: string; plan: string; monthlyCredits: number }>();
-  return row ? { id: row.id, plan: row.plan, monthlyCredits: row.monthlyCredits } : null;
+    .first<{ id: string; plan: string; monthlyCredits: number; spendLimit: number | null }>();
+  return row
+    ? { id: row.id, plan: row.plan, monthlyCredits: row.monthlyCredits, spendLimit: row.spendLimit ?? null }
+    : null;
+}
+
+/** Set (or clear with null) the user-configurable hard spend ceiling for a key. */
+export async function setSpendLimit(db: D1Database, keyId: string, limit: number | null): Promise<void> {
+  await db.prepare('UPDATE api_keys SET spend_limit = ? WHERE id = ?').bind(limit, keyId).run();
 }

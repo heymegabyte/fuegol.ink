@@ -14,7 +14,7 @@ import keysRoute from './routes/keys';
 import accountRoute from './routes/account';
 import stubsRoute from './routes/stubs';
 import v1Route from './routes/v1';
-import { recordUsage } from './lib/ledger';
+import { recordUsage, creditsUsedThisPeriod, effectiveCap } from './lib/ledger';
 
 export { CrawlCoordinator } from './crawl-do';
 export { ExtractCoordinator } from './extract-do';
@@ -53,22 +53,37 @@ app.use('*', cors({
 }));
 app.use('*', principal);
 
-// Record usage to the credit ledger for authenticated (D1-key) principals, after the
-// handler runs, without blocking the response. Never throws into the request path.
+// Credit enforcement + ledger recording for authenticated (D1-key) principals.
+// Reserve/check BEFORE the work (402 on insufficient credits), record AFTER success.
 app.use('/v2/*', async (c, next) => {
-  await next();
-  try {
-    const p = c.get('principal');
-    if (p.authed && p.keyId && c.env.DB && c.res.status >= 200 && c.res.status < 400) {
-      const op = usageForRequest(c.req.method, new URL(c.req.url).pathname);
-      if (op) {
-        c.executionCtx.waitUntil(
-          recordUsage(c.env.DB, { keyId: p.keyId, operation: op.name, credits: op.credits }),
+  const p = c.get('principal');
+  const op = usageForRequest(c.req.method, new URL(c.req.url).pathname);
+
+  if (op && p.authed && p.keyId && c.env.DB) {
+    try {
+      const used = await creditsUsedThisPeriod(c.env.DB, p.keyId);
+      const cap = effectiveCap(p.monthlyCredits ?? 0, p.spendLimit);
+      if (cap - used < op.credits) {
+        return c.json(
+          {
+            success: false,
+            error: `Insufficient credits: ${op.name} needs ${op.credits}, ${Math.max(0, cap - used)} of ${cap} remaining this period. Raise your spend limit (POST /v2/team/spend-limit) or upgrade your plan.`,
+            code: 'BAD_REQUEST',
+          },
+          402,
         );
       }
+    } catch {
+      /* fail open: never block paid usage on a ledger read hiccup */
     }
-  } catch {
-    /* ledger errors must never affect the response */
+  }
+
+  await next();
+
+  if (op && p.authed && p.keyId && c.env.DB && c.res.status >= 200 && c.res.status < 400) {
+    c.executionCtx.waitUntil(
+      recordUsage(c.env.DB, { keyId: p.keyId, operation: op.name, credits: op.credits }),
+    );
   }
 });
 

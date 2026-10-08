@@ -8,6 +8,7 @@ export interface Principal {
   keyId?: string;
   plan?: string;
   monthlyCredits?: number;
+  spendLimit?: number | null;
   mode: 'authenticated' | 'demo';
 }
 
@@ -37,6 +38,7 @@ export async function principal(c: Context<{ Bindings: Env; Variables: Vars }>, 
         keyId: resolved.id,
         plan: resolved.plan,
         monthlyCredits: resolved.monthlyCredits,
+        spendLimit: resolved.spendLimit,
         mode: 'authenticated',
       });
     } else {

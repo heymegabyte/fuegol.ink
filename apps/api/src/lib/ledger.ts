@@ -57,4 +57,10 @@ export async function usageHistory(db: D1Database, keyId: string, limit = 100): 
   return results ?? [];
 }
 
+/** Effective credit cap = min(plan credits, user spend limit if set). */
+export function effectiveCap(monthlyCredits: number, spendLimit: number | null | undefined): number {
+  if (spendLimit == null) return monthlyCredits;
+  return Math.min(monthlyCredits, Math.max(0, spendLimit));
+}
+
 export { periodStartIso };
