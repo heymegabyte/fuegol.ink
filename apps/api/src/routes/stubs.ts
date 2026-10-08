@@ -29,10 +29,6 @@ const ROADMAP = 'See docs/implementation-roadmap.md.';
 // Search (needs a pluggable web-search provider key)
 route.post('/search', notYet('Web search', 'Configure a search provider (SEARCH_PROVIDER + API key) to enable. ' + ROADMAP));
 
-// Extract (async AI extraction — Workers AI + AI Gateway + job store)
-route.post('/extract', notYet('Structured extract', `Use POST /v2/scrape with a {type:"json"} format for single-URL extraction today. ${ROADMAP}`));
-route.get('/extract/:id', notYet('Extract status', ROADMAP));
-
 // Document parse (PDF/DOCX → markdown)
 route.post('/parse', notYet('Document parse', ROADMAP));
 

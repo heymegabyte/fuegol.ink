@@ -1,5 +1,6 @@
 import type { BrowserQuickAction, WorkersAiBinding, EngineEnv } from '@fuegol/engine';
 import type { CrawlCoordinator } from './crawl-do';
+import type { ExtractCoordinator } from './extract-do';
 
 /** Worker environment bindings + vars. All data-plane bindings are optional so the
  *  Worker deploys and serves the free static tier on a bare account. */
@@ -14,8 +15,10 @@ export interface Env {
   DEMO_MODE?: string;
   USER_AGENT?: string;
   SERVICE_ORIGIN?: string;
-  /** Durable Object namespace backing async crawl jobs. */
+  /** Durable Object namespace backing async crawl + batch jobs. */
   CRAWL?: DurableObjectNamespace<CrawlCoordinator>;
+  /** Durable Object namespace backing async extract jobs. */
+  EXTRACT?: DurableObjectNamespace<ExtractCoordinator>;
 }
 
 /** Project the Worker Env onto the engine's expected binding surface. */

@@ -22,7 +22,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 
 | Method | Path (prefix `/v2`) | Purpose | Status |
 |---|---|---|---|
-| POST | `/scrape` | Scrape one URL (all formats) | 🟡 markdown/html/links/metadata live; AI-json/screenshot via browser tier ⛔ |
+| POST | `/scrape` | Scrape one URL (all formats) | 🟡 markdown/html/rawHtml/links/summary/metadata + `{type:"json"}` AI extraction live; screenshot/changeTracking ⛔ |
 | GET | `/scrape/:jobId` | Async scrape fetch | ⛔ |
 | POST | `/map` | Enumerate site URLs | ✅ sitemap + link discovery |
 | POST | `/crawl` | Start multi-page crawl (Durable-Object coordinator) | ✅ live |
@@ -33,7 +33,7 @@ Legend: ✅ implemented · 🟡 partial/stub · ⛔ planned · `n/a` not applica
 | POST | `/crawl/params-preview` | Prompt→params preview | ⛔ (Workers AI) |
 | POST | `/batch/scrape` (+ status/cancel/errors) | Batch scrape (reuses crawl DO) | ✅ live |
 | POST | `/search` | Web/news/image + category search | 🟡 contract; provider adapter ⛔ |
-| POST | `/extract` · GET `/extract/:jobId` | Async structured extraction | ⛔ (Workers AI + AI Gateway) |
+| POST | `/extract` · GET `/extract/:jobId` | Async structured extraction (Workers AI, ExtractCoordinator DO) | ✅ live |
 | POST | `/parse` (+ formats/upload) | Document parse (PDF/DOCX/…) | ⛔ |
 | GET | `/team/credit-usage` (+ historical) | Credit balance | 🟡 ledger-backed |
 | GET | `/team/token-usage` (+ historical) | Token balance | ⛔ |

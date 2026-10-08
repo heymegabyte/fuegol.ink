@@ -11,10 +11,18 @@
     "USER_AGENT": "fuegolbot/0.1 (+https://fuegol.ink/bot)"
   },
 
+  "ai": { "binding": "AI" },
+
   "durable_objects": {
-    "bindings": [{ "name": "CRAWL", "class_name": "CrawlCoordinator" }]
+    "bindings": [
+      { "name": "CRAWL", "class_name": "CrawlCoordinator" },
+      { "name": "EXTRACT", "class_name": "ExtractCoordinator" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CrawlCoordinator"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["CrawlCoordinator"] },
+    { "tag": "v2", "new_sqlite_classes": ["ExtractCoordinator"] }
+  ]
 
   // --- Optional bindings (uncomment + provision to enable higher tiers) ---
   //

@@ -6,6 +6,7 @@ import { parseHtml, selectContent, extractLinks } from './extract-content';
 import { extractMetadata } from './metadata';
 import { htmlToMarkdown } from './html-to-markdown';
 import { browserAvailable, browserQuickAction } from './browser';
+import { extractWithAI, extractAvailable } from './extract-ai';
 import { planScrape, formatTypes } from './planner';
 import type { EngineEnv } from './types';
 
@@ -71,26 +72,35 @@ export async function scrape(request: ScrapeRequest, env: EngineEnv): Promise<Sc
   if (formats.has('rawHtml')) doc.rawHtml = html;
   if (formats.has('links')) doc.links = links;
 
-  // AI JSON extraction via the browser/json tier when configured.
+  // Structured JSON extraction. Prefer Workers AI (available account-wide) over the
+  // Browser Rendering /json tier; fall back to a warning when neither is configured.
   if (formats.has('json')) {
-    if (browserAvailable(env)) {
-      const jsonFmt = (options.formats ?? []).find(
-        (f) => typeof f === 'object' && f.type === 'json',
-      ) as { prompt?: string; schema?: Record<string, unknown> } | undefined;
+    const jsonFmt = (options.formats ?? []).find(
+      (f) => typeof f === 'object' && f.type === 'json',
+    ) as { prompt?: string; schema?: Record<string, unknown> } | undefined;
+    if (extractAvailable(env)) {
+      try {
+        doc.json = await extractWithAI(
+          doc.markdown ?? markdown,
+          { prompt: jsonFmt?.prompt, schema: jsonFmt?.schema },
+          env,
+        );
+      } catch (e) {
+        doc.warning = appendWarning(doc.warning, `AI extraction failed: ${e instanceof Error ? e.message : 'error'}`);
+      }
+    } else if (browserAvailable(env)) {
       try {
         const r = await browserQuickAction(env, 'json', {
           url: finalUrl,
           prompt: jsonFmt?.prompt,
-          response_format: jsonFmt?.schema
-            ? { type: 'json_schema', json_schema: jsonFmt.schema }
-            : undefined,
+          response_format: jsonFmt?.schema ? { type: 'json_schema', json_schema: jsonFmt.schema } : undefined,
         });
         if (r.result !== undefined) doc.json = r.result;
       } catch {
-        doc.warning = 'AI JSON extraction failed; returning content-only result.';
+        doc.warning = appendWarning(doc.warning, 'JSON extraction failed; returning content-only result.');
       }
     } else {
-      doc.warning = appendWarning(doc.warning, 'json format needs the browser/AI tier.');
+      doc.warning = appendWarning(doc.warning, 'json format needs the AI (Workers AI) or browser tier — bind AI to enable.');
     }
   }
 

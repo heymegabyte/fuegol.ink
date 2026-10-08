@@ -12,7 +12,8 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 - ✅ Docs: idea-ledger (360 ideas/108 selected), firecrawl-compatibility, product-surface-inventory, unit-economics, architecture-decisions, convergence-log, this roadmap
 
 ## 🟡 Increment 1 — Scrape completeness + custom domains
-- 🟡 Browser tier: verify `env.BROWSER` binding on-account → enable JS render, `{type:"json"}` extraction, screenshots→R2 asset URLs
+- ✅ **AI structured extraction (Workers AI)**: `scrape {type:"json"}` + async `POST /v2/extract` (ExtractCoordinator DO, schema/prompt-guided) — **10/10 E2E green**
+- 🟡 Browser tier: bind `env.BROWSER` → JS render + screenshots→R2 asset URLs (AI json already works without it)
 - ⛔ Document parse (`/v2/parse`): PDF/DOCX → markdown (Browser Rendering + Workers AI OCR)
 - ⛔ `changeTracking` format (needs a stored prior-scrape index in R2/D1)
 - ⛔ Custom domains: `api.fuegol.ink`, route binding in wrangler (needs zone)

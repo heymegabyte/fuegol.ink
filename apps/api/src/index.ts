@@ -7,11 +7,13 @@ import scrapeRoute from './routes/scrape';
 import mapRoute from './routes/map';
 import crawlRoute from './routes/crawl';
 import batchRoute from './routes/batch';
+import extractRoute from './routes/extract';
 import accountRoute from './routes/account';
 import stubsRoute from './routes/stubs';
 import v1Route from './routes/v1';
 
 export { CrawlCoordinator } from './crawl-do';
+export { ExtractCoordinator } from './extract-do';
 
 const app = new Hono<{ Bindings: Env; Variables: Vars }>();
 
@@ -52,6 +54,7 @@ v2.route('/', scrapeRoute);
 v2.route('/', mapRoute);
 v2.route('/', crawlRoute);
 v2.route('/', batchRoute);
+v2.route('/', extractRoute);
 v2.route('/', accountRoute);
 v2.route('/', stubsRoute);
 app.route('/v2', v2);
