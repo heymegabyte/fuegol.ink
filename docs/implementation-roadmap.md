@@ -30,7 +30,7 @@ Status key: ✅ done · 🟡 partial · ⛔ not started. "Pass 0" = the foundati
 ## 🟡 Increment 3 — Search, research, monitoring
 - ✅ Pluggable web-search provider adapter (**Exa** primary, **Tavily** fallback) behind `SEARCH_PROVIDER`; keys are Worker secrets
 - ✅ `POST /v2/search` + MCP `firecrawl_search` — real results, optional per-result scraping — **8/8 E2E green**
-- ⛔ sources (news/images) + categories (github/research/pdf/developer/gov); developer + gov + scholarly research adapters (authorized indexes only)
+- ✅ **Category search via Exa scoping**: `/v2/search` `categories` (developer/github → GitHub, research → research-paper, pdf, gov → gov-domain list) + MCP `firecrawl_developer_search` / `firecrawl_gov_search` / `firecrawl_research_search_papers` now real (verified: NeurIPS/ACM papers, ecfr/congress.gov, github). ⛔ remaining: news/images sources, paper inspect/related/read, find_tools
 - Tenant Cloudflare AI Search indexing; semantic change monitors on Cron
 
 ## 🟡 Increment 4 — Remote MCP (mcp.fuegol.ink)

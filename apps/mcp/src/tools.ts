@@ -10,6 +10,22 @@ async function apiFetch(env: Env, path: string, init?: RequestInit): Promise<Res
   return fetch(`${env.API_BASE || DEFAULT_API_BASE}${path}`, init);
 }
 
+/** Category-scoped search via /v2/search (Exa category/domain scoping under the hood). */
+async function proxySearch(env: Env, query: string, categories: string[], k: number): Promise<McpContent> {
+  const res = await apiFetch(env, '/v2/search', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ query, limit: k, categories }),
+  });
+  const body = (await res.json()) as { success?: boolean; error?: string; data?: { web?: Array<Record<string, unknown>> } };
+  if (!res.ok || body.success === false) return [{ type: 'text', text: `Search failed: ${body.error ?? res.status}` }];
+  const web = body.data?.web ?? [];
+  const text = web
+    .map((r, i) => `${i + 1}. ${(r.title as string) ?? ''}\n${(r.url as string) ?? ''}\n${(r.description as string) ?? ''}`)
+    .join('\n\n');
+  return [{ type: 'text', text: text || 'No results.' }];
+}
+
 /** Thrown by tools whose execution is a later increment — surfaced as an MCP tool
  *  error (isError:true), never a fabricated success. */
 export class NotImplemented extends Error {}
@@ -203,18 +219,27 @@ export const TOOLS: McpTool[] = [
     },
   },
   // --- search-only profile research tools (contract-present, honest stubs) ---
-  mkStub('firecrawl_developer_search', 'Search public repos / issues / PRs / code docs.', ['search'], {
-    query: { type: 'string' },
-    k: { type: 'number' },
-  }, ['query'], 'Developer search index — Increment 3.'),
-  mkStub('firecrawl_gov_search', 'Search US federal/state/local legal + regulatory sources.', ['search'], {
-    query: { type: 'string' },
-    k: { type: 'number' },
-  }, ['query'], 'Government search index — Increment 3.'),
-  mkStub('firecrawl_research_search_papers', 'Search paper abstracts/metadata (PubMed/arXiv/bioRxiv).', ['search'], {
-    query: { type: 'string' },
-    k: { type: 'number' },
-  }, ['query'], 'Scholarly research index — Increment 3.'),
+  {
+    name: 'firecrawl_developer_search',
+    description: 'Search public repositories, code, issues, PRs and dev docs (GitHub-scoped).',
+    profiles: ['search'],
+    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['developer'], Number(a.k) || 10),
+  },
+  {
+    name: 'firecrawl_gov_search',
+    description: 'Search US federal legal + regulatory primary sources (gov domains).',
+    profiles: ['search'],
+    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['gov'], Number(a.k) || 10),
+  },
+  {
+    name: 'firecrawl_research_search_papers',
+    description: 'Search scholarly papers (research-paper category; arXiv/PubMed/journals).',
+    profiles: ['search'],
+    inputSchema: { type: 'object', properties: { query: { type: 'string' }, k: { type: 'number' } }, required: ['query'] },
+    handler: (a, e) => proxySearch(e, String(a.query ?? ''), ['research'], Number(a.k) || 40),
+  },
   mkStub('firecrawl_research_inspect_paper', 'Canonical metadata for one paper ID.', ['search'], {
     paperId: { type: 'string' },
   }, ['paperId'], 'Scholarly research index — Increment 3.'),

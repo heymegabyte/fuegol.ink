@@ -9,6 +9,10 @@ import type { EngineEnv } from './types';
 export interface WebSearchOptions {
   limit?: number;
   sources?: string[];
+  /** Exa content category: 'github' | 'research paper' | 'pdf' | 'news' | … */
+  category?: string;
+  /** Restrict results to these domains (e.g. gov sources). */
+  includeDomains?: string[];
 }
 
 export interface NormalizedResult {
@@ -37,12 +41,21 @@ export async function webSearch(
 ): Promise<{ web: NormalizedResult[]; provider: string }> {
   const provider = searchProviderName(env);
   const limit = Math.min(Math.max(opts.limit ?? 10, 1), 100);
-  if (provider === 'exa') return { web: await exaSearch(query, limit, env.EXA_API_KEY!), provider };
+  // Category/domain scoping is Exa-only; Tavily fallback does a plain search.
+  if (provider === 'exa') {
+    return { web: await exaSearch(query, limit, env.EXA_API_KEY!, opts.category, opts.includeDomains), provider };
+  }
   if (provider === 'tavily') return { web: await tavilySearch(query, limit, env.TAVILY_API_KEY!), provider };
   throw new Error('No search provider configured (set EXA_API_KEY or TAVILY_API_KEY).');
 }
 
-async function exaSearch(query: string, limit: number, key: string): Promise<NormalizedResult[]> {
+async function exaSearch(
+  query: string,
+  limit: number,
+  key: string,
+  category?: string,
+  includeDomains?: string[],
+): Promise<NormalizedResult[]> {
   const res = await fetch('https://api.exa.ai/search', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': key },
@@ -50,6 +63,8 @@ async function exaSearch(query: string, limit: number, key: string): Promise<Nor
       query,
       numResults: limit,
       type: 'auto',
+      ...(category ? { category } : {}),
+      ...(includeDomains && includeDomains.length ? { includeDomains } : {}),
       contents: { text: { maxCharacters: 500 } },
     }),
     signal: AbortSignal.timeout(20000),

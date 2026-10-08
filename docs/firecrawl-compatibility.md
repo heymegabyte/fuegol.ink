@@ -99,7 +99,7 @@ explicit not-yet error (never fabricated data).
 
 | Profile | Tools | Status |
 |---|---|---|
-| Full (`/v2/mcp`) | scrape✅ map✅ crawl✅ check_crawl_status✅ search✅; research/gov (honest stub) | 🟡 live |
+| Full (`/v2/mcp`) | scrape✅ map✅ crawl✅ check_crawl_status✅ search✅ developer_search✅ gov_search✅ research_search_papers✅; paper inspect/related/read + find_tools (stub) | 🟡 live |
 | Search-only (`/v2/mcp-search`) | `firecrawl_scrape`✅ + `firecrawl_search firecrawl_developer_search firecrawl_gov_search firecrawl_research_search_papers firecrawl_research_inspect_paper firecrawl_research_related_papers firecrawl_research_read_paper firecrawl_find_tools` (stubs) | 🟡 live |
 | Keyless | `firecrawl_scrape firecrawl_search firecrawl_parse` | ⛔ (auth layer pending) |
 

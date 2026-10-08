@@ -9,6 +9,17 @@ import { allowDemo } from '../lib/ratelimit';
 
 const route = new Hono<{ Bindings: Env; Variables: Vars }>();
 const SCRAPE_RESULT_CAP = 10;
+/** Best-effort US gov/regulatory primary-source domains for the `gov` category. */
+const GOV_DOMAINS = [
+  'congress.gov',
+  'govinfo.gov',
+  'regulations.gov',
+  'federalregister.gov',
+  'supremecourt.gov',
+  'whitehouse.gov',
+  'gao.gov',
+  'uscourts.gov',
+];
 
 function gate(c: Context<{ Bindings: Env; Variables: Vars }>): Response | null {
   const p = c.get('principal');
@@ -33,9 +44,17 @@ route.post('/search', async (c) => {
   if (!parsed.ok) return parsed.response;
 
   try {
+    const cats = parsed.data.categories ?? [];
+    let category: string | undefined;
+    let includeDomains: string[] | undefined;
+    if (cats.includes('research')) category = 'research paper';
+    else if (cats.includes('developer') || cats.includes('github')) category = 'github';
+    else if (cats.includes('pdf')) category = 'pdf';
+    if (cats.includes('gov')) includeDomains = GOV_DOMAINS;
+
     const { web, provider } = await webSearch(
       parsed.data.query,
-      { limit: parsed.data.limit, sources: parsed.data.sources },
+      { limit: parsed.data.limit, sources: parsed.data.sources, category, includeDomains },
       eng,
     );
 
