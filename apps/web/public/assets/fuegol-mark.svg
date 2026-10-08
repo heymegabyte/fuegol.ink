@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="fuegol.ink — the web data engine for AI">
+  <defs>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#FF5722"/>
+      <stop offset="0.55" stop-color="#FF8A3D"/>
+      <stop offset="1" stop-color="#FFC24B"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="1" stop-color="#50AAE3"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="180" rx="20" fill="#060610"/>
+  <!-- flame mark -->
+  <g transform="translate(54 34)">
+    <path d="M56 8 C40 30 60 44 42 74 C36 84 22 84 20 68 C8 80 10 112 36 112 C66 112 80 86 70 58 C64 40 70 24 56 8 Z" fill="url(#flame)"/>
+    <circle cx="44" cy="92" r="12" fill="#00E5FF" opacity="0.9"/>
+  </g>
+  <!-- wordmark -->
+  <text x="150" y="86" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="56" font-weight="800" fill="#F4F7FB">fuegol<tspan fill="url(#cyan)">.ink</tspan></text>
+  <text x="152" y="124" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="21" font-weight="500" fill="#8A93A6">The web data engine for AI · Firecrawl-compatible · Cloudflare-powered</text>
+</svg>

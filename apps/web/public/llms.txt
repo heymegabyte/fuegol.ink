@@ -1,0 +1,16 @@
+# fuegol.ink
+
+> Open-source, Cloudflare-native web data engine that speaks the Firecrawl v2 API. Scrape, crawl, map, search, extract, parse, run AI Search (RAG) and persistent interactive browser sessions — at roughly half Firecrawl's price. Point an existing Firecrawl client at fuegol.ink and keep your code (use a fuegol `fgl_` key, never a Firecrawl `fc-` key).
+
+## API
+- [Live REST API](https://fuegol-api.manhattan.workers.dev): Firecrawl v2-compatible — `POST /v2/scrape` · `/map` · `/crawl` · `/batch/scrape` · `/search` (web/news/images + tbs) · `/extract` · `/parse` · `/agent` · `/monitor` · `/browser` (interactive sessions) · `/ai-search` (semantic RAG)
+- [Remote MCP](https://fuegol-mcp.manhattan.workers.dev/v2/mcp): stateless Streamable-HTTP JSON-RPC, `firecrawl_*` tools (scrape/map/crawl/search/agent/monitor/research)
+
+## Docs
+- [README + quickstart](https://github.com/heymegabyte/fuegol.ink)
+- [Firecrawl compatibility](https://github.com/heymegabyte/fuegol.ink/blob/main/docs/firecrawl-compatibility.md)
+- [Self-hosting](https://github.com/heymegabyte/fuegol.ink/blob/main/deploy/README.md)
+
+## Notes
+- MIT-licensed; self-hostable on your own Cloudflare account with no dependency on fuegol.ink.
+- Compatibility = change the base URL + swap in a fuegol key; request/response business logic is unchanged.

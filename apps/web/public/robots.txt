@@ -1,0 +1,6 @@
+# fuegol.ink — open-source, Cloudflare-native, Firecrawl-compatible web data engine.
+User-agent: *
+Allow: /
+Disallow: /app/
+
+Sitemap: https://fuegol.ink/sitemap.xml
