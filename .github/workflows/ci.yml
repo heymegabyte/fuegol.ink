@@ -26,7 +26,8 @@ jobs:
         run: pnpm lint
       - name: Typecheck (all packages)
         run: pnpm -r --if-present typecheck
-      - name: Unit tests (engine)
+      - name: Unit tests (engine + contracts)
         run: |
           pnpm rebuild esbuild
           pnpm --filter @fuegol/engine test
+          pnpm --filter @fuegol/contracts test

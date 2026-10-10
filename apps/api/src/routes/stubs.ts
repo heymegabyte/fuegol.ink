@@ -7,12 +7,13 @@ import type { Vars } from '../lib/auth';
 const route = new Hono<{ Bindings: Env; Variables: Vars }>();
 
 /**
- * Upstream Firecrawl families present in the compatibility inventory but not yet
- * served. Honest 501 with the Firecrawl error envelope (never 404, never a fake
- * success). The core data API (scrape/map/crawl/batch/extract/search/parse) is live;
- * these are the interactive/autonomous families tracked for later increments.
+ * Honest 501 scaffold for any upstream Firecrawl family that is contracted but not
+ * yet served (never 404, never a fake success). The entire core data API plus the
+ * interactive/autonomous families (scrape/map/crawl/batch/extract/search/parse +
+ * interactive browser sessions, monitors, agent, AI search) are LIVE, so this route
+ * currently registers nothing — it stays as the pattern for future increments.
  */
-function notYet(feature: string, hint: string) {
+export function notYet(feature: string, hint: string) {
   return (c: Context<{ Bindings: Env; Variables: Vars }>) =>
     c.json(
       {
@@ -23,10 +24,5 @@ function notYet(feature: string, hint: string) {
       501 as ContentfulStatusCode,
     );
 }
-
-const ROADMAP = 'See docs/implementation-roadmap.md.';
-
-// Interactive browser sessions (interact)
-route.post('/browser', notYet('Interactive browser session', ROADMAP));
 
 export default route;

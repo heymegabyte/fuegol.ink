@@ -13,6 +13,7 @@ export * from './batch';
 export * from './search';
 export * from './extract';
 export * from './account';
+export * from './pricing';
 
 /** The upstream Firecrawl revision these contracts are pinned to (see docs/firecrawl-compatibility.md). */
 export const FIRECRAWL_COMPAT = {

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/cloudflare';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { FIRECRAWL_COMPAT } from '@fuegol/contracts';
+import { FIRECRAWL_COMPAT, CORE_CREDIT_COSTS } from '@fuegol/contracts';
 import type { Env } from './env';
 import { principal, type Vars } from './lib/auth';
 import scrapeRoute from './routes/scrape';
@@ -17,6 +17,7 @@ import keysRoute from './routes/keys';
 import monitorRoute from './routes/monitor';
 import agentRoute from './routes/agent';
 import accountRoute from './routes/account';
+import pricingRoute from './routes/pricing';
 import stubsRoute from './routes/stubs';
 import v1Route from './routes/v1';
 import { recordUsage, creditsUsedThisPeriod, effectiveCap } from './lib/ledger';
@@ -50,26 +51,29 @@ export const BrowserSession = Sentry.instrumentDurableObjectWithSentry(
 /** Map a request to its billable operation + credit cost (null = not billed). */
 function usageForRequest(method: string, path: string): { name: string; credits: number } | null {
   if (method !== 'POST') return null;
-  // Interactive browser sessions (dynamic :id in the act path): meter create + each act.
+  // Fuego-exclusive PREMIUM ops. Current billed values are the pre-GA defaults; the
+  // margin-floored GA targets (priced against the worst-case lot) live in the pricing
+  // SSOT — see premiumCredits() in @fuegol/contracts and docs/RELEASE_CHECKLIST.md.
   if (path === '/v2/browser') return { name: 'browser_session', credits: 2 };
   if (/^\/v2\/browser\/[^/]+\/act$/.test(path)) return { name: 'browser_act', credits: 1 };
   if (path === '/v2/ai-search/index') return { name: 'ai_search_index', credits: 5 };
   if (path === '/v2/ai-search/query') return { name: 'ai_search_query', credits: 2 };
+  // CORE ops — Firecrawl-identical credit burn, sourced from the pricing SSOT.
   switch (path) {
     case '/v2/scrape':
-      return { name: 'scrape', credits: 1 };
+      return { name: 'scrape', credits: CORE_CREDIT_COSTS.scrape };
     case '/v2/map':
-      return { name: 'map', credits: 1 };
+      return { name: 'map', credits: CORE_CREDIT_COSTS.map };
     case '/v2/search':
-      return { name: 'search', credits: 2 };
+      return { name: 'search', credits: CORE_CREDIT_COSTS.search };
     case '/v2/extract':
-      return { name: 'extract', credits: 5 };
+      return { name: 'extract', credits: CORE_CREDIT_COSTS.extract };
     case '/v2/parse':
-      return { name: 'parse', credits: 1 };
+      return { name: 'parse', credits: CORE_CREDIT_COSTS.parse };
     case '/v2/crawl':
-      return { name: 'crawl', credits: 1 }; // job start; per-page usage tracked in the DO
+      return { name: 'crawl', credits: CORE_CREDIT_COSTS.crawl }; // job start; per-page usage tracked in the DO
     case '/v2/batch/scrape':
-      return { name: 'batch_scrape', credits: 1 };
+      return { name: 'batch_scrape', credits: CORE_CREDIT_COSTS.batch_scrape };
     default:
       return null;
   }
@@ -138,7 +142,9 @@ app.get('/', (c) =>
       map: 'POST /v2/map',
       crawl: 'POST /v2/crawl',
       crawlStatus: 'GET /v2/crawl/:id',
-      search: 'POST /v2/search (coming soon)',
+      search: 'POST /v2/search',
+      pricing: 'GET /v2/pricing',
+      quote: 'POST /v2/quote',
       creditUsage: 'GET /v2/team/credit-usage',
       health: 'GET /health',
     },
@@ -203,6 +209,7 @@ v2.route('/', keysRoute);
 v2.route('/', monitorRoute);
 v2.route('/', agentRoute);
 v2.route('/', accountRoute);
+v2.route('/', pricingRoute);
 v2.route('/', stubsRoute);
 app.route('/v2', v2);
 app.route('/v1', v1Route);
