@@ -6,3 +6,6 @@ dist/
 # Hand-authored cinematic static site + console (intentionally compact inline CSS/JS —
 # prettier would expand it into a large, unwanted diff). Formatting is owned by hand here.
 apps/web/public/
+# Pinned upstream Firecrawl OpenAPI specs — byte-exact for sha256 drift detection.
+# Reformatting them would break the pin/drift check. Never touch these bytes.
+packages/contracts/upstream/

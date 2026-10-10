@@ -1,0 +1,30 @@
+{
+  "note": "Pinned upstream Firecrawl OpenAPI. Byte-exact; sha256 gates drift detection (see .github/workflows/contract-drift.yml). Do NOT reformat.",
+  "retrievedAt": "2026-10-10",
+  "specs": {
+    "v2": {
+      "file": "v2-openapi.json",
+      "sourceUrl": "https://docs.firecrawl.dev/api-reference/v2-openapi.json",
+      "openapi": "3.0.0",
+      "title": "Firecrawl API",
+      "apiVersion": "v2",
+      "bytes": 473629,
+      "sha256": "0541be01504053f8e978b60c6a12dc100cd6a76020f2a2723ecf9411f5778a3b",
+      "paths": 45,
+      "operations": 57,
+      "components": 67
+    },
+    "v1": {
+      "file": "v1-openapi.json",
+      "sourceUrl": "https://docs.firecrawl.dev/api-reference/v1-openapi.json",
+      "openapi": "3.0.0",
+      "title": "Firecrawl API",
+      "apiVersion": "v1",
+      "bytes": 132167,
+      "sha256": "d30b8816c05054b596b02d7dc8f39cb186ac79108b03113f3f4c9eee86300781",
+      "paths": 21,
+      "operations": 23,
+      "components": 12
+    }
+  }
+}

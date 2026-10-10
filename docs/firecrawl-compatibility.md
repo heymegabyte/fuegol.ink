@@ -114,6 +114,10 @@ Full 30-tool inventory with input schemas is mirrored in `docs/product-surface-i
 
 ## Schema-drift detection
 
-`packages/contracts` records the pinned SHAs. A scheduled job (Cron) will re-read the upstream
-`types.ts` + MCP tool registrations and diff against our Zod mirror, opening an issue on drift.
-Until that lands, this table is updated by hand each convergence pass.
+The official **v2 + v1 OpenAPI** are pinned byte-exact in `packages/contracts/upstream/` with
+sha256 hashes in `MANIFEST.json` (retrieved 2026-10-10 from `docs.firecrawl.dev/api-reference/`).
+A scheduled GitHub Action (`.github/workflows/contract-drift.yml`) re-fetches upstream weekly, compares
+sha256, and opens a **reviewable issue** on any change — contract drift never silently reaches
+production. Machine conformance of live responses against the pinned specs runs in `e2e/contract/run.mjs`
+(v2 coverage 28/57, v1 2/23; scrape/map/search/credit-usage conform to the documented 200 schemas).
+See [`COMPATIBILITY_MATRIX.md`](./COMPATIBILITY_MATRIX.md) § Machine contract tests.

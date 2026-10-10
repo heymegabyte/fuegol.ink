@@ -1,0 +1,40 @@
+name: Firecrawl contract drift
+
+# Re-fetch the upstream Firecrawl OpenAPI weekly and flag any change as a REVIEWABLE
+# issue — upstream contract changes never silently alter production (build brief §2).
+on:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare upstream OpenAPI to pinned sha256
+        id: drift
+        run: node scripts/check-contract-drift.mjs
+      - name: Open / update a review issue on drift
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('contract-drift-summary.md', 'utf8');
+            const title = 'Firecrawl OpenAPI drift detected';
+            const { owner, repo } = context.repo;
+            const open = await github.rest.issues.listForRepo({ owner, repo, state: 'open', per_page: 100 });
+            const hit = open.data.find((i) => i.title === title && !i.pull_request);
+            if (hit) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: hit.number, body });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body });
+            }

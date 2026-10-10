@@ -6,21 +6,26 @@
 
 ## Gate A — "fully Firecrawl compatible"
 
-| Criterion                                                              | State                                                                |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Pinned v2 contract: every core family callable with correct semantics  | ✅ VERIFIED                                                          |
-| Official TS SDK (`@mendable/firecrawl-js`) unchanged                   | ✅ 8/8                                                               |
-| Official Python SDK (`firecrawl-py`) unchanged                         | ✅ 4/4                                                               |
-| MCP core tools callable (scrape/map/crawl/search + research)           | ✅ VERIFIED                                                          |
-| Error envelope + status codes match upstream                           | ✅ VERIFIED                                                          |
-| v1 adapters for legacy clients                                         | ✅ VERIFIED                                                          |
-| v1 **and** v2 OpenAPI pinned + machine contract tests in CI            | ⛔ pending (Zod SSOT is the contract; no committed upstream OpenAPI) |
-| Go/Java/Rust/Ruby/PHP/.NET SDK smoke harnesses                         | ⛔ pending                                                           |
-| Diagnostics endpoints (token-usage, queue-status, keyless/eligibility) | ⛔ pending (low priority)                                            |
+| Criterion                                                              | State                                                                  |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Pinned v2 contract: every core family callable with correct semantics  | ✅ VERIFIED                                                            |
+| Official TS SDK (`@mendable/firecrawl-js`) unchanged                   | ✅ 8/8                                                                 |
+| Official Python SDK (`firecrawl-py`) unchanged                         | ✅ 4/4                                                                 |
+| MCP core tools callable (scrape/map/crawl/search + research)           | ✅ VERIFIED                                                            |
+| Error envelope + status codes match upstream                           | ✅ VERIFIED                                                            |
+| v1 + v2 OpenAPI pinned (sha256) + drift CI job                         | ✅ `packages/contracts/upstream/` + weekly drift workflow              |
+| Machine conformance: live responses ⊆ documented 200 schema            | ✅ 4/4 (scrape/map/search/credit-usage) via `e2e/contract/run.mjs`     |
+| v2 operation coverage (routed)                                         | 🟡 28/57 (rest out-of-scope / Fuego-namespaced / low-priority)         |
+| v1 operation coverage (routed)                                         | ⛔ 2/23 (only `/v1/scrape` + `/v1/map`; expand or document as v2-only) |
+| Contract conformance wired as a CI gate (not just prod E2E)            | ⛔ pending (needs a hermetic fixture or live-API CI creds)             |
+| v1 adapters for legacy clients                                         | ✅ scrape + map; others pending                                        |
+| Go/Java/Rust/Ruby/PHP/.NET SDK smoke harnesses                         | ⛔ pending                                                             |
+| Diagnostics endpoints (token-usage, queue-status, keyless/eligibility) | ⛔ pending (low priority)                                              |
 
-**Verdict:** "Firecrawl-compatible for the TS/Python SDKs + core REST/MCP" is **true and tested**.
-The unqualified "fully compatible" label stays **blocked** until the OpenAPI contract tests + more SDK
-harnesses land.
+**Verdict:** "Firecrawl-compatible for the TS/Python SDKs + core REST/MCP" is **true and tested**,
+and now **machine-validated against Firecrawl's own pinned OpenAPI**. The unqualified "fully
+compatible" label stays **blocked** on broader v2 coverage, a real v1 surface (or an explicit v2-only
+declaration), more SDK harnesses, and a hermetic contract CI gate.
 
 ## Gate B — "profitable premium"
 

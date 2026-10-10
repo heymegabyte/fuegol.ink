@@ -10,6 +10,25 @@
 `firecrawl-mcp-server@ec0f9de` (npm `firecrawl-mcp@3.28.2`, 30 registered / 28 listed) ·
 pricing `firecrawl.dev/pricing` — all re-verified **2026-10-09**.
 
+## Machine contract tests (pinned OpenAPI)
+
+The official **v2 + v1 OpenAPI** are now pinned byte-exact in `packages/contracts/upstream/`
+(sha256 in `MANIFEST.json`, retrieved 2026-10-10): **v2** = 45 paths / **57 operations** / 67
+schemas; **v1** = 21 paths / **23 operations**. A dependency-free OpenAPI-3.0 validator
+(`e2e/contract/run.mjs`) does two things against the **live** API:
+
+- **Coverage** (routed vs not, method-aware live probe): **v2 28/57** · **v1 2/23** operations SERVED.
+  The unserved v2 ops are out-of-scope (`/support/*`, `/team/threat-protection`), Fuego-namespaced
+  under different paths (upstream `/interact/*` → Fuego `/v2/browser`; `/search/developer|gov|research`
+  → Fuego MCP tools + `/v2/search` categories), or low-priority (`/scrape/{jobId}` async, `/feedback`,
+  agent list/trace/snapshots, monitor PATCH). **v1 is intentionally thin** (only `/v1/scrape` +
+  `/v1/map` adapters) — tracked as a NEXT item; the official SDKs use v2.
+- **Conformance** (live response ⊆ documented 200 schema): **4/4 VERIFIED** — `scrape`, `map`,
+  `search`, `team/credit-usage` responses validate against Firecrawl's **own** pinned OpenAPI.
+
+A scheduled CI job (`.github/workflows/contract-drift.yml`) re-fetches upstream weekly and opens a
+**reviewable issue** on any sha256 drift — upstream contract changes never silently reach production.
+
 ## SDKs (the operational definition of "drop-in")
 
 | Client                               | Version | How                                     | Status                                       |
