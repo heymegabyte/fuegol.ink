@@ -3,18 +3,26 @@
 > Goal: price the managed edition at ≈**50% of Firecrawl's annual-billed plans** while holding a
 > positive gross margin on routine workloads. Targets are a ceiling, not a mandate to run at a loss.
 
-## Competitor anchor (Firecrawl, retrieved 2026-10-07)
+## Competitor anchor (Firecrawl, re-verified 2026-10-09)
 
-Firecrawl's pricing cards show **annual-billed, monthly-equivalent** prices. That is our anchor.
+Firecrawl's pricing cards default to **annual-billed** monthly-equivalent prices, but they also sell
+**month-to-month**. The headline **"50% less on comparable core API plans"** is measured against the
+**month-to-month** price — the apples-to-apples basis for a monthly fuego plan. The annual figures are
+shown alongside so the comparison is never misleading. fuego seeds each monthly plan at **exactly half
+of Firecrawl's month-to-month price**, like-for-like credits (SSOT: `packages/contracts/src/pricing.ts`).
 
-| Firecrawl plan | Monthly credits | Annual-billed (mo-equiv) | Monthly-billed | **fuegol target (≈50%)** |
-| -------------- | --------------: | -----------------------: | -------------: | -----------------------: |
-| Free           |           1,000 |                       $0 |             $0 |  **$0** (≥1,000 credits) |
-| Hobby          |           5,000 |                      $16 |            $19 |                **$8/mo** |
-| Standard       |         100,000 |                      $83 |            $99 |               **$42/mo** |
-| Growth         |         500,000 |                     $333 |           $399 |              **$167/mo** |
-| Scale          |       1,000,000 |                     $599 |           $749 |              **$300/mo** |
-| Enterprise     |          custom |                   custom |         custom |                   custom |
+| Firecrawl plan | Monthly credits | Month-to-month | Annual (mo-equiv) | **fuego (½ of m2m)** |
+| -------------- | --------------: | -------------: | ----------------: | -------------------: |
+| Free           |           1,000 |             $0 |                $0 |    **$0** (1,000 cr) |
+| Hobby          |           5,000 |            $19 |               $16 |            **$9.50** |
+| Standard       |         100,000 |            $99 |               $83 |           **$49.50** |
+| Growth         |         500,000 |           $399 |              $333 |          **$199.50** |
+| Scale          |       1,000,000 |           $749 |              $599 |          **$374.50** |
+| Enterprise     |          custom |         custom |            custom |               custom |
+
+Even against Firecrawl's **annual** headline, fuego is cheaper (e.g. $9.50 vs $16 = 41% less).
+**One-time credit packs** (no subscription): $5→2,000 · $10→4,500 · $25→12,000 · $50→26,000 ·
+$100→55,000 · $250→145,000 · $500→300,000. Subscriber $5 top-ups give 2× the competitor's credits.
 
 Credit model (Firecrawl, mirrored for compatibility): scrape **1/page**, crawl **1/page**, map **1/call**,
 search **2 / 10 results**, JSON/LLM-extraction **+4/page** (=5), PDF parse **+1/page**, browser interact
@@ -45,14 +53,50 @@ search **2 / 10 results**, JSON/LLM-extraction **+4/page** (=5), PDF parse **+1/
 - **AI extraction: metered pass-through + margin.** `{type:"json"}` uses Workers AI; priced to
   cover neurons/tokens with AI Gateway cache cutting repeat cost.
 
-## Margin-protection rules (enforced by the credit ledger — planned)
+## Margin-protection rules (enforced by the credit ledger)
 
-1. **Reserve-before-expensive-work:** debit an estimate before a crawl/browser job; reconcile after.
-2. **Hard spend ceilings:** user-configurable monthly cap; refuse (402) past it.
-3. **Fair billing:** cached hits and no-document failures bill 0; retries are idempotent (no double charge).
-4. **Per-job estimate:** return a credit estimate before executing a crawl.
+1. **Reserve-before-expensive-work — LIVE:** the `/v2/*` middleware checks `effectiveCap − used ≥ cost`
+   before the work and returns **402** on insufficient credits; usage is recorded after success only.
+2. **Hard spend ceilings — LIVE:** user-configurable cap via `POST /v2/team/spend-limit`; effective
+   cap = `min(plan, spendLimit)`; refuse (402) past it.
+3. **Fair billing — LIVE:** cached hits and no-document failures bill 0; a request records usage only
+   on a 2xx/3xx response.
+4. **Per-job estimate — LIVE:** `POST /v2/quote` returns a deterministic credit + USD estimate, a firm
+   max, and **fails closed** (`boundable:false`) on an unbounded crawl/agent. See the premium model below.
 5. **Measure, don't guess:** replayable benchmark jobs (see docs/implementation-roadmap.md §benchmarks)
-   produce real P50/P95 cost per operation type; this table is updated from measurements each pass.
+   produce real P50/P95 cost per operation type; the premium table below is updated from measurements each pass.
+
+## Premium margin model (verified 2026-10-09)
+
+Fuego-exclusive premium ops (interactive browser, AI search/RAG, agent, OCR, stealth) are **not**
+half-price loss leaders. They are priced to clear a **≥50% contribution-margin floor** against the
+**worst-case (deepest-discount) credit lot** — never the Hobby retail rate — so a Scale or bulk-pack
+buyer cannot arbitrage premium work at a loss.
+
+- **Provider cost anchor:** Cloudflare Browser Rendering = **$0.09 / browser-hour** (REST/Quick
+  Actions, duration only; 10 free hrs/mo on Workers Paid). Sessions add $2 / concurrent browser.
+  Workers AI per-neuron/token (via AI Gateway cache). R2 $0.015/GB-mo, $0 egress.
+- **Worst-case lot:** the Scale subscription — $374.50 / 1,000,000 credits, **net ≈ $0.000363/credit**
+  after an amortized Stripe fee (2.9% + $0.30). This is `lowestNetRevenuePerCredit()`.
+- **Formula:** `credits = ceil( costUsd × risk / (1 − floor) / worstRate )` with `floor = 0.5`,
+  `risk = 1.5` (adverse-cost headroom). Proven by 20 property tests in `packages/contracts/test/pricing.test.ts`:
+  margin ≥ floor at **every** lot even under the full adverse-cost spike.
+
+| Premium unit             | Modeled cost (P95) | Margin-safe credits | Notes                         |
+| ------------------------ | -----------------: | ------------------: | ----------------------------- |
+| Browser render / page    |             $0.001 |                  ~9 | JS render + cold-start buffer |
+| Interactive browser /min |             $0.003 |                 ~25 | per wall-clock minute         |
+| AI extraction / page     |             $0.002 |                 ~17 | Workers AI structured JSON    |
+| AI search index / doc    |            $0.0015 |                 ~13 | embed + upsert                |
+| AI search query          |             $0.003 |                 ~25 | embed + grounded answer       |
+| Agent run (bounded)      |              $0.02 |                ~166 | cap required                  |
+| OCR / page               |             $0.004 |                 ~33 | scanned-doc layout            |
+| Stealth proxy / page     |             $0.005 |                 ~42 | premium/stealth egress        |
+
+> Pre-GA, live metering of the Fuego-exclusive ops still bills the earlier flat defaults (browser
+> act 1, ai-search query 2, etc.); these are **below** the margin-safe floor for deep-discount lots.
+> `/v2/quote` already returns the margin-safe numbers, and moving live metering to them is a tracked,
+> prospective change (see `docs/RELEASE_CHECKLIST.md`) — never a silent rate hike on a live customer.
 
 ## Open economics questions (to resolve before GA pricing)
 
