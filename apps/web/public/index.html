@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>document.documentElement.className = 'js';</script>
 <title>fuegol.ink — the web data engine for AI · Firecrawl-compatible · Cloudflare-powered</title>
-<meta name="description" content="Open-source, Cloudflare-native web data platform that speaks the Firecrawl v2 API. Scrape, crawl, map, search, extract, and parse — half the price. Point your client at fuegol.ink and keep your code." />
+<meta name="description" content="Open-source, Cloudflare-native web data platform that speaks the Firecrawl v2 API. Scrape, crawl, map, search, extract, and parse — half the core API price. Point your client at fuegol.ink and keep your code." />
 <link rel="canonical" href="https://fuegol.ink/" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="fuegol.ink — the web data engine for AI" />
-<meta property="og:description" content="Firecrawl-compatible. Cloudflare-powered. Half the price." />
+<meta property="og:description" content="Firecrawl-compatible. Cloudflare-powered. Half the core API price." />
 <meta property="og:url" content="https://fuegol.ink/" />
 <meta property="og:site_name" content="fuegol.ink" />
 <meta property="og:image" content="https://fuegol.ink/assets/fuegol-mark.svg" />
@@ -57,6 +57,8 @@
   .flame-mark{width:26px;height:26px;filter:drop-shadow(0 0 6px rgba(255,138,61,.6))}
   nav .links{display:flex;gap:22px;margin-left:auto;align-items:center;color:var(--mut);font-size:14px}
   nav .links a:hover{color:var(--ink)}
+  nav .links .hide-sm{display:inline}
+  @media(max-width:760px){nav .links .hide-sm{display:none}}
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;padding:11px 18px;font-weight:600;
     font-size:14px;cursor:pointer;border:1px solid transparent;transition:transform .15s ease,box-shadow .2s ease,background .2s}
   .btn:hover{transform:translateY(-1px)}
@@ -99,6 +101,7 @@
   .eyebrow{color:var(--cyan);font:600 13px var(--mono);letter-spacing:.08em;text-transform:uppercase}
   h2.sec{font-size:clamp(1.8rem,4vw,2.7rem);margin:10px 0 0;text-wrap:balance}
   .lead{color:var(--mut);margin:14px 0 0;max-width:60ch;font-size:1.05rem}
+  .muted{color:var(--faint)}
   /* Progressive enhancement: content is visible by default; only when JS is on do we
      hide-then-reveal on scroll. No-JS / crawlers always see everything. */
   .reveal{transition:opacity .7s ease,transform .7s ease}
@@ -117,8 +120,15 @@
   .tile.flame .ic{background:rgba(255,138,61,.12);border-color:rgba(255,138,61,.3)}
 
   /* Compat strip */
-  .diff{font:600 14px/2 var(--mono);background:#0a0a16;border:1px solid var(--line);border-radius:14px;padding:20px;overflow:auto;margin-top:26px}
+  .diff{font:600 14px/2 var(--mono);background:#0a0a16;border:1px solid var(--line);border-radius:14px;padding:20px;overflow:auto;margin-top:18px}
   .diff .del{color:#ff7b72} .diff .add{color:#7ee787} .diff .c{color:var(--faint)}
+
+  /* Tabs (migration assistant) */
+  .tabs{display:flex;gap:8px;margin:22px 0 0;flex-wrap:wrap}
+  .tabs button{font:600 13px var(--mono);color:var(--mut);background:var(--glass);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+  .tabs button.on{color:#06121a;background:linear-gradient(100deg,var(--cyan),var(--cyan2));border-color:transparent}
+  .tabs button:not(.on):hover{color:var(--ink);border-color:var(--cyan)}
 
   /* Demo */
   .demo{margin-top:30px;display:grid;grid-template-columns:1fr;gap:14px}
@@ -130,6 +140,31 @@
     color:#cfe8ff;padding:18px;border-radius:14px;background:#0a0a16;border:1px solid var(--line)}
   #demoOut .muted{color:var(--faint)}
 
+  /* Savings calculator + price estimator */
+  .calc{padding:22px;margin-top:30px}
+  .calcRow{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+  .calc label,.est label{font:600 12.5px var(--mono);color:var(--mut);display:flex;flex-direction:column;gap:7px;text-transform:uppercase;letter-spacing:.05em}
+  .calc select,.est select,.est input{background:#0a0a16;border:1px solid var(--line);border-radius:10px;color:var(--ink);
+    padding:11px 13px;font:14px var(--mono);min-width:150px}
+  .calc select:focus,.est select:focus,.est input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.15)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{font:600 12.5px var(--mono);color:var(--mut);background:transparent;border:0;padding:11px 14px;cursor:pointer}
+  .seg button.on{background:rgba(0,229,255,.12);color:var(--cyan)}
+  #calcOut{margin-top:22px;font-size:1.02rem;color:var(--mut);line-height:1.8}
+  #calcOut .big{font-family:var(--disp);font-size:2rem;font-weight:700;color:var(--ink)}
+  #calcOut .save{color:#7ee787;font-weight:700}
+  .est{padding:22px;margin-top:26px}
+  .estGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:end}
+  @media(max-width:720px){.estGrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.estGrid{grid-template-columns:1fr}}
+  .est .chk{flex-direction:row;align-items:center;gap:9px;color:var(--mut);text-transform:none;letter-spacing:0;font-weight:500}
+  .est .chk input{min-width:0;width:17px;height:17px;accent-color:var(--cyan)}
+  .est #eBtn{margin-top:20px}
+  #eOut{margin-top:18px;padding:18px;border-radius:14px;background:#0a0a16;border:1px solid var(--line);font:13px/1.7 var(--mono);color:#cfe8ff}
+  #eOut .big{font-family:var(--disp);font-size:1.6rem;color:var(--ink);font-weight:700}
+  #eOut .warn{color:var(--flame3)} #eOut .ok{color:#7ee787}
+  #eOut table{width:100%;border-collapse:collapse;margin-top:12px} #eOut td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+
   /* Pricing */
   .prices{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:36px}
   @media(max-width:900px){.prices{grid-template-columns:repeat(2,1fr)}}
@@ -137,7 +172,7 @@
   .price{padding:22px 18px;border-radius:15px;text-align:center}
   .price.pop{border-color:rgba(0,229,255,.4);box-shadow:0 0 40px -16px rgba(0,229,255,.5)}
   .price .nm{font:600 13px var(--mono);color:var(--cyan);text-transform:uppercase;letter-spacing:.06em}
-  .price .amt{font-family:var(--disp);font-size:2rem;font-weight:700;margin:8px 0 2px}
+  .price .amt{font-family:var(--disp);font-size:1.85rem;font-weight:700;margin:8px 0 2px}
   .price .amt small{font-size:.9rem;color:var(--mut);font-weight:500}
   .price .cr{color:var(--mut);font-size:.9rem}
   .price .fc{color:var(--faint);font-size:.8rem;margin-top:6px;text-decoration:line-through}
@@ -162,11 +197,12 @@
     fuegol<span class="ink-accent">.ink</span>
   </a>
   <div class="links">
-    <a href="#features">Features</a>
-    <a href="#demo">Demo</a>
+    <a class="hide-sm" href="#features">Features</a>
+    <a class="hide-sm" href="#demo">Demo</a>
     <a href="#pricing">Pricing</a>
-    <a href="#compat">Compatibility</a>
-    <a href="https://github.com/heymegabyte/fuegol.ink">GitHub</a>
+    <a href="#estimate">Estimate</a>
+    <a class="hide-sm" href="#compat">Compatibility</a>
+    <a class="hide-sm" href="https://github.com/heymegabyte/fuegol.ink">GitHub</a>
     <a class="btn btn-primary" href="#start">Get a key</a>
   </div>
 </div></nav>
@@ -176,16 +212,16 @@
   <div class="heroGrid">
     <div>
       <span class="badge"><span class="dot"></span> API live · Firecrawl v2 compatible</span>
-      <h1 class="hero">The web data engine <span class="grad">for AI.</span></h1>
-      <p class="sub">Open-source, Cloudflare-native, and drop-in compatible with the Firecrawl v2 API. Scrape, crawl, map, search, extract, and parse the web — at <strong>half the price</strong>. Point your client at fuegol.ink and keep your code.</p>
+      <h1 class="hero">Your Firecrawl code. <span class="grad">Half the core API cost.</span></h1>
+      <p class="sub">Open-source, Cloudflare-native, and drop-in compatible with the Firecrawl v2 API. Scrape, crawl, map, search, extract, and parse the web — then point your client at fuegol.ink and keep your code.</p>
       <div class="cta">
-        <a class="btn btn-primary" href="#start">Start free →</a>
-        <a class="btn btn-ghost" href="#demo">Try the live demo</a>
+        <a class="btn btn-primary" href="#demo">Run a real scrape free →</a>
+        <a class="btn btn-ghost" href="#migrate">Switch your endpoint</a>
       </div>
       <div class="stats">
         <div><b>7</b> data endpoints live</div>
-        <div><b>5</b> MCP tools</div>
-        <div><b>~50%</b> of Firecrawl's price</div>
+        <div><b>13</b> MCP tools</div>
+        <div><b>50%</b> less on core API plans</div>
         <div><b>MIT</b> · self-hostable</div>
       </div>
     </div>
@@ -205,13 +241,24 @@
 <section id="migrate"><div class="wrap reveal">
   <span class="eyebrow">Drop-in compatible</span>
   <h2 class="sec">Change one line. Keep your code.</h2>
-  <p class="lead">fuegol speaks the Firecrawl v2 contract — same request bodies, same response shapes, same error envelope. Migrating is a base-URL swap and a new key.</p>
-<pre class="diff"><span class="c"># Firecrawl → fuegol.ink</span>
-<span class="del">- const base = 'https://api.firecrawl.dev';</span>
-<span class="del">- const key  = 'fc-...';</span>
-<span class="add">+ const base = 'https://api.fuegol.ink';   // or your own Worker</span>
-<span class="add">+ const key  = 'fgl_live_...';             // a new fuegol key</span></pre>
-  <p class="note">Your existing Firecrawl key is never automatically valid — issue a fuegol key (free, instant, below).</p>
+  <p class="lead">fuegol speaks the Firecrawl v2 contract — same request bodies, same response shapes, same error envelope. The official <code>@mendable/firecrawl-js</code> and <code>firecrawl-py</code> SDKs run unchanged (verified 8/8 + 4/4 against production).</p>
+  <div class="tabs" id="migTabs">
+    <button class="on" data-l="ts">TypeScript SDK</button>
+    <button data-l="py">Python SDK</button>
+    <button data-l="curl">cURL / REST</button>
+  </div>
+<pre class="diff" id="mig-ts"><span class="c">// @mendable/firecrawl-js — change the constructor, keep every call</span>
+<span class="del">- const app = new Firecrawl({ apiKey: 'fc-...' });</span>
+<span class="add">+ const app = new Firecrawl({ apiKey: 'fgl_live_...', apiUrl: 'https://api.fuegol.ink' });</span>
+<span class="c">  await app.scrape('https://example.com', { formats: ['markdown'] }); // unchanged</span></pre>
+<pre class="diff" id="mig-py" hidden><span class="c"># firecrawl-py — same client, new api_url + key</span>
+<span class="del">- app = Firecrawl(api_key="fc-...")</span>
+<span class="add">+ app = Firecrawl(api_key="fgl_live_...", api_url="https://api.fuegol.ink")</span>
+<span class="c">  app.scrape("https://example.com", formats=["markdown"])  # unchanged</span></pre>
+<pre class="diff" id="mig-curl" hidden><span class="c"># Raw REST — swap the host and the bearer token</span>
+<span class="del">- curl https://api.firecrawl.dev/v2/scrape -H 'Authorization: Bearer fc-...'</span>
+<span class="add">+ curl https://api.fuegol.ink/v2/scrape  -H 'Authorization: Bearer fgl_live_...'</span></pre>
+  <p class="note">Your existing Firecrawl key is never automatically valid — issue a fuegol key (free, instant, below). The <code>FIRECRAWL_API_URL</code> / <code>FIRECRAWL_API_KEY</code> env conventions are honored too.</p>
 </div></section>
 
 <section id="demo"><div class="wrap reveal">
@@ -235,27 +282,70 @@
     <div class="tile card"><h3><span class="ic">📄</span> Scrape</h3><p>Markdown, HTML, links, summary, and schema-guided JSON via Workers AI.</p></div>
     <div class="tile card"><h3><span class="ic">🕸️</span> Crawl</h3><p>Async multi-page crawl on a Durable Object — robots-aware, resumable, cancelable.</p></div>
     <div class="tile card"><h3><span class="ic">🗺️</span> Map</h3><p>Enumerate a site's URLs from sitemaps + link discovery in one call.</p></div>
-    <div class="tile card"><h3><span class="ic">🔎</span> Search</h3><p>Web search with optional result-scraping, via a pluggable provider adapter.</p></div>
+    <div class="tile card"><h3><span class="ic">🔎</span> Search</h3><p>Web / news / images search with optional result-scraping + time filters.</p></div>
     <div class="tile card"><h3><span class="ic">🧩</span> Extract</h3><p>Structured JSON across many URLs, guided by your prompt + JSON Schema.</p></div>
-    <div class="tile card"><h3><span class="ic">📑</span> Parse</h3><p>PDF (native), HTML, and text documents → clean Markdown.</p></div>
-    <div class="tile card flame"><h3><span class="ic">🛡️</span> SSRF-hardened</h3><p>Private/metadata IP + redirect + DNS-rebind defense on every fetch.</p></div>
+    <div class="tile card"><h3><span class="ic">🤖</span> Agent &amp; Monitor</h3><p>Autonomous research runs, plus scheduled change monitoring with signed webhook alerts.</p></div>
+    <div class="tile card flame"><h3><span class="ic">🖱️</span> Interactive browser</h3><p>Persistent Puppeteer sessions — click, type, scroll across requests. Metered by the minute.</p></div>
     <div class="tile card"><h3><span class="ic">🔌</span> Remote MCP</h3><p>Firecrawl-compatible <code>firecrawl_*</code> tools over Streamable HTTP for Claude, Cursor &amp; co.</p></div>
-    <div class="tile card lg"><h3><span class="ic">💳</span> Real credit ledger</h3><p>A transactional D1 ledger is the live authority for balance + usage — with enforced spend ceilings and user-set hard limits. Not an eventually-consistent meter.</p></div>
+    <div class="tile card lg"><h3><span class="ic">💳</span> Real credit ledger + preflight quotes</h3><p>A transactional D1 ledger is the live authority for balance + usage — with enforced spend ceilings, user-set hard limits, and a deterministic <code>/v2/quote</code> that bounds cost before any job runs. Not an eventually-consistent meter.</p></div>
   </div>
 </div></section>
 
 <section id="pricing"><div class="wrap reveal">
   <span class="eyebrow">Pricing</span>
   <h2 class="sec">Half the price. Same API.</h2>
-  <p class="lead">Proposed managed-edition pricing, anchored at ≈50% of Firecrawl's annual-billed plans. Self-hosting is free forever on your own Cloudflare account.</p>
+  <p class="lead">Managed-edition plans at <strong>exactly half of Firecrawl's month-to-month price</strong>, with like-for-like included credits. Self-hosting is free forever on your own Cloudflare account.</p>
   <div class="prices">
     <div class="price card"><div class="nm">Free</div><div class="amt">$0</div><div class="cr">1,000 credits/mo</div></div>
-    <div class="price card"><div class="nm">Hobby</div><div class="amt">$8<small>/mo</small></div><div class="cr">5,000 credits</div><div class="fc">Firecrawl $16</div></div>
-    <div class="price card pop"><div class="nm">Standard</div><div class="amt">$42<small>/mo</small></div><div class="cr">100,000 credits</div><div class="fc">Firecrawl $83</div></div>
-    <div class="price card"><div class="nm">Growth</div><div class="amt">$167<small>/mo</small></div><div class="cr">500,000 credits</div><div class="fc">Firecrawl $333</div></div>
-    <div class="price card"><div class="nm">Scale</div><div class="amt">$300<small>/mo</small></div><div class="cr">1,000,000 credits</div><div class="fc">Firecrawl $599</div></div>
+    <div class="price card"><div class="nm">Hobby</div><div class="amt">$9.50<small>/mo</small></div><div class="cr">5,000 credits</div><div class="fc">Firecrawl $19</div></div>
+    <div class="price card pop"><div class="nm">Standard</div><div class="amt">$49.50<small>/mo</small></div><div class="cr">100,000 credits</div><div class="fc">Firecrawl $99</div></div>
+    <div class="price card"><div class="nm">Growth</div><div class="amt">$199.50<small>/mo</small></div><div class="cr">500,000 credits</div><div class="fc">Firecrawl $399</div></div>
+    <div class="price card"><div class="nm">Scale</div><div class="amt">$374.50<small>/mo</small></div><div class="cr">1,000,000 credits</div><div class="fc">Firecrawl $749</div></div>
   </div>
-  <p class="note">Prices shown per month, billed annually (vs Firecrawl's annual-billed equivalents, retrieved 2026-10-07). Managed billing is in Stripe test mode — not yet charging.</p>
+  <div class="calc card">
+    <div class="calcRow">
+      <label>Plan
+        <select id="calcPlan"><option value="hobby">Hobby</option><option value="standard" selected>Standard</option><option value="growth">Growth</option><option value="scale">Scale</option></select>
+      </label>
+      <div class="seg" id="calcBasis" role="group" aria-label="Firecrawl comparison basis">
+        <button type="button" data-b="monthly" class="on">vs month-to-month</button>
+        <button type="button" data-b="annual">vs annual</button>
+      </div>
+    </div>
+    <div id="calcOut"><span class="muted">See how much you save…</span></div>
+  </div>
+  <p class="note">Core credits bill identically to Firecrawl — your plan simply costs less per credit. "50% less" is measured vs Firecrawl's month-to-month pricing (checked 2026-10-09); their annual-billed equivalents are $16 / $83 / $333 / $599, and fuegol is cheaper even against those. One-time credit packs (no subscription) start at $5 for 2,000 credits. Managed billing runs in Stripe test mode — not yet charging real cards.</p>
+</div></section>
+
+<section id="estimate"><div class="wrap reveal">
+  <span class="eyebrow">Price before you crawl</span>
+  <h2 class="sec">Know the cost before you run it.</h2>
+  <p class="lead">A deterministic preflight quote from the live API — credits, dollars at your plan rate, and a firm ceiling. Open-ended jobs must carry a cap: fuegol never runs an unbounded-cost job.</p>
+  <div class="est card">
+    <div class="estGrid">
+      <label>Operation
+        <select id="eOp">
+          <option value="scrape">Scrape</option><option value="crawl">Crawl</option>
+          <option value="batch_scrape">Batch scrape</option><option value="map">Map</option>
+          <option value="search">Search</option><option value="extract">Extract</option>
+          <option value="agent">Agent (autonomous)</option><option value="browser">Interactive browser</option>
+          <option value="ai_search_query">AI search query</option><option value="ai_search_index">AI search index</option>
+        </select>
+      </label>
+      <label id="ePagesWrap">Pages<input id="ePages" type="number" min="1" value="100" /></label>
+      <label id="eResultsWrap" hidden>Results<input id="eResults" type="number" min="1" value="20" /></label>
+      <label id="eMinutesWrap" hidden>Minutes<input id="eMinutes" type="number" min="1" value="5" /></label>
+      <label>Your plan
+        <select id="eLot"><option value="hobby">Hobby</option><option value="standard" selected>Standard</option><option value="growth">Growth</option><option value="scale">Scale</option><option value="bulk">Bulk pack</option></select>
+      </label>
+      <label>Max credits<input id="eMax" type="number" min="1" placeholder="optional cap" /></label>
+      <label class="chk"><input type="checkbox" id="eJson" /> JSON / AI extraction (+4/pg)</label>
+      <label class="chk"><input type="checkbox" id="eShot" /> Screenshot (premium)</label>
+      <label class="chk"><input type="checkbox" id="eStealth" /> Stealth proxy (premium)</label>
+    </div>
+    <button class="btn btn-primary" id="eBtn">Estimate →</button>
+    <div id="eOut"><span class="muted">Your quote will appear here…</span></div>
+  </div>
 </div></section>
 
 <section id="compat"><div class="wrap reveal">
@@ -263,15 +353,20 @@
   <h2 class="sec">What's live today.</h2>
   <table>
     <tr><th>Endpoint</th><th>Status</th><th>Engine</th></tr>
-    <tr><td><code>POST /v2/scrape</code></td><td><span class="ok">● live</span></td><td>static + Workers AI json</td></tr>
+    <tr><td><code>POST /v2/scrape</code></td><td><span class="ok">● live</span></td><td>static + browser tier + Workers AI json</td></tr>
     <tr><td><code>POST /v2/map</code></td><td><span class="ok">● live</span></td><td>sitemap + link discovery</td></tr>
     <tr><td><code>POST /v2/crawl</code> (+status/cancel/errors)</td><td><span class="ok">● live</span></td><td>Durable Object coordinator</td></tr>
     <tr><td><code>POST /v2/batch/scrape</code></td><td><span class="ok">● live</span></td><td>Durable Object (fixed frontier)</td></tr>
     <tr><td><code>POST /v2/extract</code> (+status)</td><td><span class="ok">● live</span></td><td>Workers AI</td></tr>
-    <tr><td><code>POST /v2/search</code></td><td><span class="ok">● live</span></td><td>pluggable provider + scrape</td></tr>
+    <tr><td><code>POST /v2/search</code> (web/news/images)</td><td><span class="ok">● live</span></td><td>pluggable provider + scrape + tbs</td></tr>
     <tr><td><code>POST /v2/parse</code></td><td><span class="ok">● live</span></td><td>unpdf / HTML / text</td></tr>
-    <tr><td>Remote MCP (<code>/v2/mcp</code>, <code>/v2/mcp-search</code>)</td><td><span class="ok">● live</span></td><td>createMcpHandler-style, stateless</td></tr>
-    <tr><td><code>/agent</code> · <code>/monitor</code> · <code>/interact</code></td><td><span class="soon">◐ planned</span></td><td>honest 501 until shipped</td></tr>
+    <tr><td><code>POST /v2/agent</code> (+status)</td><td><span class="ok">● live</span></td><td>web-search + scrape + AI synthesis</td></tr>
+    <tr><td><code>POST /v2/monitor</code> (+run/checks/webhook)</td><td><span class="ok">● live</span></td><td>cron sweep + change diff + signed alerts</td></tr>
+    <tr><td><code>POST /v2/browser</code> · <code>/:id/act</code> (interact)</td><td><span class="ok">● live</span></td><td>persistent Puppeteer session (DO)</td></tr>
+    <tr><td><code>POST /v2/ai-search/*</code> (RAG)</td><td><span class="ok">● live</span></td><td>Vectorize + Workers AI</td></tr>
+    <tr><td><code>GET /v2/pricing</code> · <code>POST /v2/quote</code></td><td><span class="ok">● live</span></td><td>price book + preflight estimate</td></tr>
+    <tr><td>Remote MCP (<code>/v2/mcp</code>, <code>/v2/mcp-search</code>)</td><td><span class="ok">● live</span></td><td>createMcpHandler-style, stateless · ~13 tools</td></tr>
+    <tr><td>Stripe subscriptions + one-time credit packs</td><td><span class="soon">◐ planned</span></td><td>built behind the ledger; awaiting a Stripe test key</td></tr>
   </table>
 </div></section>
 
@@ -314,6 +409,7 @@
   // Scroll reveal
   const io = new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
   // Live demo
   const out = document.getElementById('demoOut'), btn = document.getElementById('demoBtn'), urlEl = document.getElementById('demoUrl');
   async function run(){
@@ -329,6 +425,82 @@
   }
   btn.addEventListener('click',run);
   urlEl.addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+
+  // Migration assistant — language tabs
+  const migTabs = document.getElementById('migTabs');
+  if(migTabs){
+    const panes = {ts:'mig-ts',py:'mig-py',curl:'mig-curl'};
+    migTabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      migTabs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+      Object.entries(panes).forEach(([l,id])=>{const el=document.getElementById(id); if(el) el.hidden = (l!==b.dataset.l);});
+    }));
+  }
+
+  // Savings calculator — SSOT is the live price book, with a safe fallback
+  const FALLBACK_PLANS = [
+    {key:'hobby',priceMonthly:9.5,competitor:{monthly:19,annualMonthly:16}},
+    {key:'standard',priceMonthly:49.5,competitor:{monthly:99,annualMonthly:83}},
+    {key:'growth',priceMonthly:199.5,competitor:{monthly:399,annualMonthly:333}},
+    {key:'scale',priceMonthly:374.5,competitor:{monthly:749,annualMonthly:599}},
+  ];
+  let PLANS = FALLBACK_PLANS, basis = 'monthly';
+  const calcPlan = document.getElementById('calcPlan'), calcOut = document.getElementById('calcOut'), calcBasis = document.getElementById('calcBasis');
+  const money = n => '$'+Number(n).toFixed(2).replace(/\.00$/,'');
+  function renderCalc(){
+    if(!calcPlan) return;
+    const p = PLANS.find(x=>x.key===calcPlan.value) || PLANS[1];
+    if(!p || !p.competitor){ calcOut.textContent=''; return; }
+    const fc = basis==='annual' ? p.competitor.annualMonthly : p.competitor.monthly;
+    const save = fc - p.priceMonthly, pct = fc ? Math.round(save/fc*100) : 0;
+    calcOut.innerHTML = '<span class="big">'+money(p.priceMonthly)+'</span> <small>/mo on fuegol</small>'+
+      ' &nbsp;·&nbsp; Firecrawl '+money(fc)+'/mo ('+(basis==='annual'?'annual-billed':'month-to-month')+')'+
+      ' &nbsp;·&nbsp; <span class="save">save '+money(save)+'/mo — '+pct+'% less</span>'+
+      ' <small>(≈'+money(save*12)+'/yr)</small>';
+  }
+  if(calcPlan){
+    fetch(API+'/v2/pricing').then(r=>r.json()).then(j=>{
+      if(j && j.data && Array.isArray(j.data.plans)){ const live = j.data.plans.filter(p=>p.priceMonthly && p.competitor); if(live.length) PLANS = live; }
+      renderCalc();
+    }).catch(renderCalc);
+    calcPlan.addEventListener('change',renderCalc);
+    calcBasis.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{basis=b.dataset.b;calcBasis.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderCalc();}));
+    renderCalc();
+  }
+
+  // Price-before-you-crawl estimator → POST /v2/quote
+  const eOp = document.getElementById('eOp');
+  const PAGE_OPS = ['scrape','crawl','batch_scrape','extract','ai_search_index'];
+  function syncFields(){
+    const op = eOp.value, show=(id,on)=>{const el=document.getElementById(id); if(el) el.hidden=!on;};
+    show('ePagesWrap', PAGE_OPS.includes(op));
+    show('eResultsWrap', op==='search');
+    show('eMinutesWrap', op==='browser');
+  }
+  async function estimate(){
+    const op = eOp.value, eout = document.getElementById('eOut'), ebtn = document.getElementById('eBtn');
+    const body = { operation: op, lot: document.getElementById('eLot').value };
+    const pages = +document.getElementById('ePages').value; if(PAGE_OPS.includes(op) && pages) body.pages = pages;
+    if(op==='search'){ const r=+document.getElementById('eResults').value; if(r) body.results = r; }
+    if(op==='browser'){ const m=+document.getElementById('eMinutes').value; if(m) body.minutes = m; }
+    const mx = +document.getElementById('eMax').value; if(mx) body.maxCredits = mx;
+    const fmts = []; if(document.getElementById('eJson').checked) fmts.push('json'); if(fmts.length) body.formats = fmts;
+    const prem = {}; if(document.getElementById('eShot').checked) prem.screenshot = true; if(document.getElementById('eStealth').checked) prem.stealth = true; if(Object.keys(prem).length) body.premium = prem;
+    ebtn.disabled = true; eout.innerHTML = '<span class="muted">Quoting…</span>';
+    try{
+      const res = await fetch(API+'/v2/quote',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+      const j = await res.json(); const d = j.data || {};
+      if(!d.boundable){ eout.innerHTML = '<span class="warn">⚠ '+(d.disclaimer||'This job is unbounded — set a page limit or max credits before running.')+'</span>'; return; }
+      const usd = (d.usd && d.usd.amount!=null) ? ' ≈ $'+d.usd.amount+' at your '+d.usd.lot+' rate' : '';
+      const rows = (d.breakdown||[]).map(b=>'<tr><td>'+b.item+'</td><td>'+b.quantity+'×'+b.unitCredits+'</td><td>'+b.credits+' cr</td><td class="muted">'+b.basis+'</td></tr>').join('');
+      const fc = (d.comparedToFirecrawl && d.comparedToFirecrawl.credits) ? '<div style="margin-top:10px">Firecrawl would charge <b>'+d.comparedToFirecrawl.credits+'</b> credits for the same core work — you pay half as much per credit.</div>' : '';
+      eout.innerHTML = '<div><span class="big">'+d.credits+' credits</span>'+usd+'</div>'+
+        '<div class="ok" style="margin-top:4px">range '+d.creditsRange.min+'–'+d.creditsRange.max+' · hard cap '+d.maxCredits+' · margin-safe ✓</div>'+
+        '<table>'+rows+'</table>'+fc+
+        '<div class="muted" style="margin-top:10px">'+d.disclaimer+'</div>';
+    }catch(e){ eout.innerHTML = '<span class="warn">Request failed: '+e.message+'</span>'; }
+    finally{ ebtn.disabled = false; }
+  }
+  if(eOp){ syncFields(); eOp.addEventListener('change',syncFields); document.getElementById('eBtn').addEventListener('click',estimate); }
 </script>
 </body>
 </html>

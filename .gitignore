@@ -13,5 +13,6 @@ coverage/
 test-results/
 playwright-report/
 .playwright-mcp/
+e2e/web/screenshots/
 .pnpm-store/
 *.tsbuildinfo
