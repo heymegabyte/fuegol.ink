@@ -1,6 +1,6 @@
 # Unit Economics
 
-> Goal: price the managed edition at ≈**50% of Firecrawl's annual-billed plans** while holding a
+> Goal: price the managed edition at **half of Firecrawl's month-to-month plans** while holding a
 > positive gross margin on routine workloads. Targets are a ceiling, not a mandate to run at a loss.
 
 ## Competitor anchor (Firecrawl, re-verified 2026-10-09)
@@ -45,7 +45,7 @@ search **2 / 10 results**, JSON/LLM-extraction **+4/page** (=5), PDF parse **+1/
 
 - **Static tier (the common case): near-zero marginal cost.** A scrape/map served by `fetch` +
   in-Worker extraction is a handful of Workers requests + CPU-ms — fractions of a cent. At the
-  $42/mo Standard-equivalent (100k credits), even pricing a credit at Firecrawl parity leaves a
+  $49.50/mo Standard-equivalent (100k credits), even pricing a credit at Firecrawl parity leaves a
   wide margin because most pages never touch the browser.
 - **Browser tier: the cost center.** JS-rendered pages, screenshots, and stealth proxy consume
   browser-seconds. The planner's job is to keep this to the minimum of pages that truly need it,

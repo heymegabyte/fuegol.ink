@@ -152,20 +152,27 @@ Firecrawl's Zod, which we mirror in [`packages/contracts`](packages/contracts)):
 The MCP server's README says "27 tools"; the source at HEAD registers **30** (28 listable + 2 hidden
 deprecated shims). We pin to the source count. Details: [`docs/firecrawl-compatibility.md`](docs/firecrawl-compatibility.md).
 
-## Pricing (proposed — managed edition, Stripe test mode)
+## Pricing (managed edition — Stripe not yet live)
 
-Targets are **≈50% of Firecrawl's annual-billed, monthly-equivalent** prices (retrieved 2026-10-07).
-Not yet live; billing is Increment 5 and stays in test mode until explicitly approved.
+Plans are **exactly half of Firecrawl's month-to-month price**, like-for-like credits (re-verified
+2026-10-09). The "50% less" claim is measured against Firecrawl's **month-to-month** price; their
+annual-billed equivalents ($16/$83/$333/$599) are shown too, and fuego is cheaper even against those.
+Live price book: `GET /v2/pricing`. Preflight a job cost: `POST /v2/quote`.
 
-| Tier     | Monthly credits | Firecrawl (annual-equiv) | **fuegol target** |
-| -------- | --------------: | -----------------------: | ----------------: |
-| Free     |           1,000 |                       $0 |            **$0** |
-| Hobby    |           5,000 |                      $16 |            **$8** |
-| Standard |         100,000 |                      $83 |           **$42** |
-| Growth   |         500,000 |                     $333 |          **$167** |
-| Scale    |       1,000,000 |                     $599 |          **$300** |
+| Tier     | Monthly credits | Firecrawl (month-to-month) | **fuego (½)** |
+| -------- | --------------: | -------------------------: | ------------: |
+| Free     |           1,000 |                         $0 |        **$0** |
+| Hobby    |           5,000 |                        $19 |     **$9.50** |
+| Standard |         100,000 |                        $99 |    **$49.50** |
+| Growth   |         500,000 |                       $399 |   **$199.50** |
+| Scale    |       1,000,000 |                       $749 |   **$374.50** |
 
-Cost model + margin thesis: [`docs/unit-economics.md`](docs/unit-economics.md).
+**One-time credit packs** (no subscription): $5→2,000 · $10→4,500 · $25→12,000 · $50→26,000 ·
+$100→55,000 · $250→145,000 · $500→300,000. Core ops bill at Firecrawl parity; Fuego-exclusive premium
+ops (browser/AI/agent) are priced to a proven **≥50% margin floor** against the worst-case lot — never a
+half-price loss leader. Cost model + margin proof: [`docs/unit-economics.md`](docs/unit-economics.md) ·
+status gates: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md). Billing (subscriptions +
+packs) is built behind the ledger and resumes the moment a Stripe `sk_test_` key is provisioned.
 
 ## Examples
 
